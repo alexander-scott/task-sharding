@@ -1,10 +1,17 @@
 syntax = "proto3";
 package chat;
 
+option go_package = "github.com/alexander-scott/task-director";
+
 message Message {
     string body = 1;
 }
 
+message Peer{
+    string id = 1;
+}
+
 service ChatService {
     rpc SayHello(Message) returns (Message) {}
+    rpc RegisterPeer(Peer) returns (Message) {}
 }

@@ -5,7 +5,7 @@ import (
 	"log"
 	"os/exec"
 
-	"github.com/alexander-scott/task-director/chat"
+	"github.com/alexander-scott/task-director/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -18,9 +18,9 @@ func main() {
 	}
 	defer conn.Close()
 
-	c := chat.NewChatServiceClient(conn)
+	c := task_director.NewChatServiceClient(conn)
 
-	message := chat.Message{
+	message := task_director.Message{
 		Body: "Hello from the client!",
 	}
 
