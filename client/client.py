@@ -1,62 +1,41 @@
-import websocket
-import json
 import threading
-from time import sleep
+
+from connection import Connection
+from task import Task
 
 
-class Connection:
-    def __init__(self, server_url: str):
-        self._websocket = self._init_connection(server_url)
+class Controller:
+    def __init__(self, connection: Connection):
+        self._connection = connection
 
-    def __enter__(self):
-        return self
+    def run(self):
+        print("Sending initial message")
+        self._connection.send_message({"email": "alex@alex1", "username": "username", "message": "message"})
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self._websocket:
-            self._websocket.close()
+        # Wait for initial build instructions from connection (BLOCKING)
+        initial_message = self._connection.get_latest_message(5)
+        print("Received initial message: " + str(initial_message))
 
-    def _init_connection(self, server_url: str) -> websocket.WebSocketApp:
-        websocket.enableTrace(True)
-        ws = websocket.WebSocketApp(
-            server_url, on_open=self.on_open, on_message=self.on_message, on_error=self.on_error, on_close=self.on_close
-        )
-        wst = threading.Thread(target=ws.run_forever)
-        wst.daemon = True
-        wst.start()
+        # Start background message handler
+        background_message_thread = threading.Thread(target=self.background_message_handler)
+        background_message_thread.daemon = True
+        background_message_thread.start()
 
-        connection_timeout = 5
-        while not ws.sock.connected and connection_timeout > 0:
-            connection_timeout -= 1
-            sleep(1)
+        # Start build task
+        task = Task(5)
+        task_thread = threading.Thread(target=task.run)
+        task_thread.start()
 
-        if not ws.sock.connected:
-            raise Exception("Failed to connect")
+        # Main thread should wait for task thread to finish
+        task_thread.join()
 
-        return ws
-
-    # WS Thread
-    def on_message(self, ws: websocket.WebSocketApp, message: dict):
-        print("Message received: " + message)
-
-    # WS Thread
-    def on_error(self, ws: websocket.WebSocketApp, error):
-        print("ERROR: " + error)
-
-    # WS Thread
-    def on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg):
-        print("### closed ###")
-
-    # Main Thread
-    def on_open(self, ws: websocket.WebSocketApp):
-        print("Opened connection")
-
-    # Main Thread
-    def send_message(self, message: dict):
-        self._websocket.send(json.dumps(message))
+    def background_message_handler(self):
+        message = self._connection.get_latest_message(None)
+        # Perform logic depending on the message contents, e.g. cancel the task thread
 
 
 if __name__ == "__main__":
+    print("Initialising connection")
     with Connection("ws://localhost:8000/ws") as connection:
-        print("Sending message")
-        connection.send_message({"email": "alex@alex1", "username": "username", "message": "message"})
-        sleep(2)
+        controller = Controller(connection)
+        controller.run()

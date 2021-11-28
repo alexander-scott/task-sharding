@@ -68,7 +68,7 @@ The Central Authority will receive task requests and prioritise them accordingly
 
 # TODO
 
-- [ ] Change the client to run the websocket on a background thread. https://stackoverflow.com/a/29153505
+- [x] Change the client to run the websocket on a background thread. https://stackoverflow.com/a/29153505
 - [ ] Change the client to send identifying information to the server. E.g. schema ID.
 - [ ] Create a shell script that simulates multiple clients.
 - [ ] Create a schema and mock steps for the client to run, e.g. sleep for a number of seconds.
