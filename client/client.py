@@ -1,37 +1,62 @@
 import websocket
-import _thread
-import time
 import json
+import threading
+from time import sleep
 
 
-def on_message(ws, message):
-    print("Message received: " + message)
+class Connection:
+    def __init__(self, server_url: str):
+        self._websocket = self._init_connection(server_url)
 
+    def __enter__(self):
+        return self
 
-def on_error(ws, error):
-    print("ERROR: " + error)
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self._websocket:
+            self._websocket.close()
 
+    def _init_connection(self, server_url: str) -> websocket.WebSocketApp:
+        websocket.enableTrace(True)
+        ws = websocket.WebSocketApp(
+            server_url, on_open=self.on_open, on_message=self.on_message, on_error=self.on_error, on_close=self.on_close
+        )
+        wst = threading.Thread(target=ws.run_forever)
+        wst.daemon = True
+        wst.start()
 
-def on_close(ws, close_status_code, close_msg):
-    print("### closed ###")
+        connection_timeout = 5
+        while not ws.sock.connected and connection_timeout > 0:
+            connection_timeout -= 1
+            sleep(1)
 
+        if not ws.sock.connected:
+            raise Exception("Failed to connect")
 
-def on_open(ws):
-    def run(*args):
-        for i in range(3):
-            time.sleep(1)
-            ws.send(json.dumps({"email": "alex@alex", "username": "username", "message": "message"}))
-        time.sleep(1)
-        ws.close()
-        print("thread terminating...")
+        return ws
 
-    _thread.start_new_thread(run, ())
+    # WS Thread
+    def on_message(self, ws: websocket.WebSocketApp, message: dict):
+        print("Message received: " + message)
+
+    # WS Thread
+    def on_error(self, ws: websocket.WebSocketApp, error):
+        print("ERROR: " + error)
+
+    # WS Thread
+    def on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg):
+        print("### closed ###")
+
+    # Main Thread
+    def on_open(self, ws: websocket.WebSocketApp):
+        print("Opened connection")
+
+    # Main Thread
+    def send_message(self, message: dict):
+        self._websocket.send(json.dumps(message))
 
 
 if __name__ == "__main__":
-    websocket.enableTrace(True)
-    ws = websocket.WebSocketApp(
-        "ws://localhost:8000/ws", on_open=on_open, on_message=on_message, on_error=on_error, on_close=on_close
-    )
-
-    ws.run_forever()
+    with Connection("ws://localhost:8000/ws") as connection:
+        print("Sending message")
+        connection.send_message({"email": "alex@alex1", "username": "username", "message": "message"})
+        sleep(2)
