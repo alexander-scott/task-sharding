@@ -1,4 +1,5 @@
 from time import sleep
+from logger import Logger
 
 
 class AbstractTask:
@@ -7,11 +8,12 @@ class AbstractTask:
 
 
 class Task(AbstractTask):
-    def __init__(self, task_duration: int):
+    def __init__(self, task_duration: int, logger: Logger):
         self._task_duration = task_duration
+        self._logger = logger
         super().__init__()
 
     def run(self):
-        print("Starting build task")
+        self._logger.print("Starting build task")
         sleep(self._task_duration)
-        print("Finished build task")
+        self._logger.print("Finished build task")

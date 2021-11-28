@@ -44,8 +44,9 @@ func (s *System) get() map[*websocket.Conn]bool {
 
 // Define our message object
 type Message struct {
-	ID       string `json:"ID"`
-	SchemaID string `json:"schemaID"`
+	ID          string `json:"ID"`
+	SchemaID    string `json:"schema_id"`
+	MessageType int    `json:"message_type"`
 }
 
 func main() {

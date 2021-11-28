@@ -2,22 +2,24 @@ import argparse
 import threading
 
 from connection import Connection
+from logger import Logger
 from task import Task
 
 
 class Controller:
-    def __init__(self, connection: Connection, config: any):
+    def __init__(self, config: any, connection: Connection, logger: Logger):
         self._config = config
         self._connection = connection
+        self._logger = logger
 
     def run(self):
-        initial_message = {"ID": self._config.id, "schemaID": "1"}
-        print("Sending initial message: " + str(initial_message))
+        initial_message = {"ID": self._config.id, "schema_id": "1"}
+        self._logger.print("Sending initial message: " + str(initial_message))
         self._connection.send_message(initial_message)
 
         # Wait for initial build instructions from connection (BLOCKING)
         initial_message = self._connection.get_latest_message(5)
-        print("Received initial message: " + str(initial_message))
+        self._logger.print("Received initial message: " + str(initial_message))
 
         # Start background message handler
         background_message_thread = threading.Thread(target=self.background_message_handler)
@@ -25,7 +27,7 @@ class Controller:
         background_message_thread.start()
 
         # Start build task
-        task = Task(5)
+        task = Task(5, self._logger)
         task_thread = threading.Thread(target=task.run)
         task_thread.start()
 
@@ -38,9 +40,9 @@ class Controller:
 
 
 def main(configuration):
-    print("Initialising connection")
-    with Connection("ws://localhost:8000/ws") as connection:
-        controller = Controller(connection, configuration)
+    logger = Logger(configuration.id)
+    with Connection("ws://localhost:8000/ws", logger) as connection:
+        controller = Controller(configuration, connection, logger)
         controller.run()
 
 
