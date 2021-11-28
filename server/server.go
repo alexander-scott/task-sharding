@@ -4,18 +4,42 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
 
-var clients = make(map[*websocket.Conn]bool) // connected clients
-var broadcast = make(chan Message)           // broadcast channel
+var system = System{clients: make(map[*websocket.Conn]bool)} // connected clients
+var broadcast = make(chan Message)                           // broadcast channel
 
 // Configure the upgrader
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+}
+
+type System struct {
+	mu      sync.Mutex
+	clients map[*websocket.Conn]bool
+}
+
+func (s *System) add(conn *websocket.Conn, val bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.clients[conn] = val
+}
+
+func (s *System) del(conn *websocket.Conn) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.clients, conn)
+}
+
+func (s *System) get() map[*websocket.Conn]bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.clients
 }
 
 // Define our message object
@@ -49,7 +73,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	// Register our new client
-	clients[ws] = true
+	system.add(ws, true)
 
 	for {
 		var msg Message
@@ -57,7 +81,7 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("error: %v", err)
-			delete(clients, ws)
+			system.del(ws)
 			break
 		}
 
@@ -76,13 +100,16 @@ func handleIncomingMessages() {
 	for {
 		// Grab the next message from the broadcast channel
 		msg := <-broadcast
+
+		clients := system.get()
+
 		// Send it out to every client that is currently connected
 		for client := range clients {
 			err := client.WriteJSON(msg)
 			if err != nil {
 				log.Printf("error: %v", err)
 				client.Close()
-				delete(clients, client)
+				system.del(client)
 			}
 		}
 	}
