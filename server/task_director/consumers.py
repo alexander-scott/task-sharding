@@ -1,7 +1,7 @@
 import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from game.controller import Controller
+from task_director.controller import Controller
 
 
 class TicTacToeConsumer(AsyncJsonWebsocketConsumer):

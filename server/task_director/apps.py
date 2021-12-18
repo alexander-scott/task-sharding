@@ -1,10 +1,10 @@
 from django.apps import AppConfig
 
-from game.controller import Controller
+from task_director.controller import Controller
 
 
-class GameConfig(AppConfig):
-    name = "game"
+class TaskDirectorConfig(AppConfig):
+    name = "task_director"
     controller = None
 
     def ready(self):
