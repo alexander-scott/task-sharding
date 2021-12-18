@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from task_director.controller import Controller
+from task_director.controller import TaskDirectorController
 
 
 class TaskDirectorConfig(AppConfig):
@@ -8,4 +8,4 @@ class TaskDirectorConfig(AppConfig):
     controller = None
 
     def ready(self):
-        self.controller = Controller()
+        self.controller = TaskDirectorController()

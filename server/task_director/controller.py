@@ -2,7 +2,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 
-def Controller():
+def TaskDirectorController():
     if _Controller._instance is None:
         _Controller._instance = _Controller()
     return _Controller._instance

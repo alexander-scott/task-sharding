@@ -1,10 +1,10 @@
 import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from task_director.controller import Controller
+from task_director.controller import TaskDirectorController
 
 
-class TicTacToeConsumer(AsyncJsonWebsocketConsumer):
+class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["api_version"]
         self.room_group_name = "room_%s" % self.room_name
@@ -26,7 +26,7 @@ class TicTacToeConsumer(AsyncJsonWebsocketConsumer):
         Get the event and send the appropriate event
         """
         response = json.loads(text_data)
-        await Controller().handle_received(response)
+        await TaskDirectorController().handle_received(response)
 
     async def send_message(self, res):
         """Receive message from room group"""
