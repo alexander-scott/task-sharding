@@ -1,5 +1,5 @@
 """
-ASGI config for tic_tac_toe project.
+ASGI config for server project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -14,7 +14,7 @@ from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 import game.routing
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tic_tac_toe.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 
 # application = get_asgi_application()
 application = ProtocolTypeRouter(
