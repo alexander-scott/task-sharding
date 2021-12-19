@@ -12,6 +12,9 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-python.python",
+		"vscode-icons-team.vscode-icons",
+		"eamodio.gitlens",
+		"streetsidesoftware.code-spell-checker",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
