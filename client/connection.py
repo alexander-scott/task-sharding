@@ -38,9 +38,10 @@ class Connection:
         wst.start()
 
         connection_timeout = INITIAL_CONN_TIMEOUT
-        while not ws.sock.connected and connection_timeout > 0:
-            connection_timeout -= 1
-            sleep(1)
+        if ws.sock:
+            while not ws.sock.connected and connection_timeout > 0:
+                connection_timeout -= 1
+                sleep(1)
 
         if not ws.sock.connected:
             raise Exception("Failed to connect")
@@ -53,7 +54,7 @@ class Connection:
 
     # WS Thread
     def _on_error(self, ws: websocket.WebSocketApp, error):
-        self._logger.print("ERROR: " + error)
+        self._logger.print("ERROR: " + str(error))
 
     # WS Thread
     def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg):

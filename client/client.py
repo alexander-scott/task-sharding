@@ -26,6 +26,14 @@ class Controller:
         self._logger.print("Sending initial message: " + str(initial_message))
         self._connection.send_message(initial_message)
 
+        # Start background message handler
+        background_message_thread = threading.Thread(target=self._background_message_handler)
+        background_message_thread.daemon = True
+        background_message_thread.start()
+
+        background_message_thread.join()
+
+    def _background_message_handler(self):
         while True:
             # Wait for next message
             response = self._connection.get_latest_message(None)

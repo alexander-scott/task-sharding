@@ -37,7 +37,7 @@ class _Controller:
                 await untriaged_consumers[consumer].send(
                     text_data=json.dumps(
                         {
-                            "payload": {"message_type": MessageType.BUILD_INSTRUCTIONS},
+                            "payload": {"consumer_id": consumer, "message_type": MessageType.BUILD_INSTRUCTIONS},
                         }
                     )
                 )
@@ -46,10 +46,14 @@ class _Controller:
     async def register_consumer(self, consumer: AsyncJsonWebsocketConsumer) -> str:
         with untriaged_consumers_lock:
             consumer_id = str(uuid.uuid4())
+            print("Adding consumer with ID: " + consumer_id)
             untriaged_consumers[consumer_id] = consumer
+            print("Total consumers connected: " + str(len(untriaged_consumers)))
         return consumer_id
 
     async def deregister_consumer(self, uuid: str):
         with untriaged_consumers_lock:
             if uuid in untriaged_consumers:
+                print("Removing consumer with ID: " + uuid)
                 del untriaged_consumers[uuid]
+                print("Total consumers connected: " + str(len(untriaged_consumers)))
