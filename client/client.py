@@ -53,7 +53,7 @@ class Controller:
 
 def main(configuration):
     logger = Logger(configuration.id)
-    with Connection("ws://localhost:8000/ws/api/1/", logger) as connection:
+    with Connection("ws://localhost:8000/ws/api/1/" + configuration.id + "/", logger) as connection:
         controller = Controller(configuration, connection, logger)
         controller.run()
 

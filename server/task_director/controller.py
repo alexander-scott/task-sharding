@@ -33,23 +33,25 @@ class _Controller:
     async def process(self, response: dict):
         channel_layer = get_channel_layer()
         with untriaged_consumers_lock:
-            for consumer in untriaged_consumers:
-                await untriaged_consumers[consumer].send(
+            for consumer_id in untriaged_consumers:
+                consumer = untriaged_consumers[consumer_id]
+                print("Sening build instructions to: " + consumer.id)
+                await consumer.send(
                     text_data=json.dumps(
                         {
-                            "payload": {"consumer_id": consumer, "message_type": MessageType.BUILD_INSTRUCTIONS},
+                            "payload": {"consumer_id": consumer.id, "message_type": MessageType.BUILD_INSTRUCTIONS},
                         }
                     )
                 )
-                # await channel_layer.group_send(consumer, {"type": "send_message"})
+                # await channel_layer.group_send(
+                #     consumer, {"type": "send_message", "message_type": MessageType.BUILD_INSTRUCTIONS}
+                # )
 
-    async def register_consumer(self, consumer: AsyncJsonWebsocketConsumer) -> str:
+    async def register_consumer(self, uuid: str, consumer: AsyncJsonWebsocketConsumer):
         with untriaged_consumers_lock:
-            consumer_id = str(uuid.uuid4())
-            print("Adding consumer with ID: " + consumer_id)
-            untriaged_consumers[consumer_id] = consumer
+            print("Adding consumer with ID: " + uuid)
+            untriaged_consumers[uuid] = consumer
             print("Total consumers connected: " + str(len(untriaged_consumers)))
-        return consumer_id
 
     async def deregister_consumer(self, uuid: str):
         with untriaged_consumers_lock:
