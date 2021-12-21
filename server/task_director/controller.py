@@ -1,3 +1,5 @@
+import enum
+import json
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -17,6 +19,11 @@ untriaged_consumers = {}
 untriaged_consumers_lock = threading.Lock()
 
 
+class MessageType(int, enum.Enum):
+    INIT = 1
+    BUILD_INSTRUCTIONS = 2
+
+
 class _Controller:
     _instance = None
 
@@ -26,8 +33,15 @@ class _Controller:
     async def process(self, response: dict):
         channel_layer = get_channel_layer()
         with untriaged_consumers_lock:
-            for untriaged_consumer in untriaged_consumers:
-                await channel_layer.group_send(untriaged_consumer, {"type": "send_message"})
+            for consumer in untriaged_consumers:
+                await untriaged_consumers[consumer].send(
+                    text_data=json.dumps(
+                        {
+                            "payload": {"message_type": MessageType.BUILD_INSTRUCTIONS},
+                        }
+                    )
+                )
+                # await channel_layer.group_send(consumer, {"type": "send_message"})
 
     async def register_consumer(self, consumer: AsyncJsonWebsocketConsumer) -> str:
         with untriaged_consumers_lock:

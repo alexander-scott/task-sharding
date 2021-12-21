@@ -74,8 +74,13 @@ The Central Authority will receive task requests and prioritise them accordingly
 - [x] Change the client to send identifying information to the server. E.g. schema ID.
 - [x] Create a shell script that simulates multiple clients.
 - [ ] Enable the client to call bazel via a subprocess.
+- [ ] Enable a running bazel process to be killed.
 
 ## Server
 
 - [x] Every consumer creates a channel with a unique ID. The ID is requested from the controller.
 - [ ] The controller needs to track the current state of each consumer.
+
+## Test scenario
+
+- [ ] Create a bazel rule that creates 1000 test targets with each having a deterministic "random" sleep time.

@@ -1,4 +1,6 @@
 import argparse
+import enum
+import json
 import threading
 
 from connection import Connection
@@ -6,39 +8,39 @@ from logger import Logger
 from task import Task
 
 
+class MessageType(int, enum.Enum):
+    INIT = 1
+    BUILD_INSTRUCTIONS = 2
+
+
 class Controller:
     def __init__(self, config: any, connection: Connection, logger: Logger):
         self._config = config
         self._connection = connection
         self._logger = logger
+        self._task_thread = None
+        self._dispatch = {MessageType.BUILD_INSTRUCTIONS: self._process_build_instructions}
 
     def run(self):
-        initial_message = {"ID": self._config.id, "schema_id": "1"}
+        initial_message = {"message_type": MessageType.INIT, "schema_id": "1", "branch": "master"}
         self._logger.print("Sending initial message: " + str(initial_message))
         self._connection.send_message(initial_message)
 
-        # Wait for initial build instructions from connection (BLOCKING)
-        initial_message = self._connection.get_latest_message(5)
-        self._logger.print("Received initial message: " + str(initial_message))
+        while True:
+            # Wait for next message
+            response = self._connection.get_latest_message(None)
+            self._process_message(json.loads(response))
 
-        # Start background message handler
-        background_message_thread = threading.Thread(
-            target=self.background_message_handler
-        )
-        background_message_thread.daemon = True
-        background_message_thread.start()
+    def _process_message(self, msg: dict) -> bool:
+        message_type = MessageType(int(msg["payload"]["message_type"]))
+        return self._dispatch.get(message_type)(msg=msg)
 
-        # Start build task
+    def _process_build_instructions(self, msg: dict):
+        self._logger.print("Received build instructions message: " + str(msg))
         task = Task(5, self._logger)
-        task_thread = threading.Thread(target=task.run)
-        task_thread.start()
-
-        # Main thread should wait for task thread to finish
-        task_thread.join()
-
-    def background_message_handler(self):
-        message = self._connection.get_latest_message(None)
-        # Perform logic depending on the message contents, e.g. cancel the task thread
+        self._task_thread = threading.Thread(target=task.run)
+        self._task_thread.start()
+        return True
 
 
 def main(configuration):
