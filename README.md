@@ -68,8 +68,14 @@ The Central Authority will receive task requests and prioritise them accordingly
 
 # TODO
 
+## Client
+
 - [x] Change the client to run the websocket on a background thread. https://stackoverflow.com/a/29153505
-- [ ] Change the client to send identifying information to the server. E.g. schema ID.
-- [ ] Create a shell script that simulates multiple clients.
-- [ ] Create a schema and mock steps for the client to run, e.g. sleep for a number of seconds.
+- [x] Change the client to send identifying information to the server. E.g. schema ID.
+- [x] Create a shell script that simulates multiple clients.
 - [ ] Enable the client to call bazel via a subprocess.
+
+## Server
+
+- [x] Every consumer creates a channel with a unique ID. The ID is requested from the controller.
+- [ ] The controller needs to track the current state of each consumer.

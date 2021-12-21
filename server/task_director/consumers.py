@@ -6,19 +6,15 @@ from task_director.controller import TaskDirectorController
 
 class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["api_version"]
-        self.room_group_name = "room_%s" % self.room_name
+        self.api_version = self.scope["url_route"]["kwargs"]["api_version"]
 
-        print(f"Connected with room name:{self.room_group_name}")
-
-        # Join room group
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        self.uuid = await TaskDirectorController().register_consumer(self)
+        await self.channel_layer.group_add(self.uuid, self.channel_name)
         await self.accept()
 
     async def disconnect(self, close_code):
-        print("Disconnected")
-        # Leave room group
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        await TaskDirectorController().deregister_consumer(self.uuid)
+        await self.channel_layer.group_discard(self.uuid, self.channel_name)
 
     async def receive(self, text_data):
         """
