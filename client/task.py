@@ -7,13 +7,23 @@ class AbstractTask:
         raise NotImplementedError()
 
 
+class SleepSchema:
+    tasks = {
+        "1": 3,
+        "2": 1,
+        "3": 2,
+        "4": 7,
+        "5": 6,
+    }
+
+
 class Task(AbstractTask):
-    def __init__(self, task_duration: int, logger: Logger):
-        self._task_duration = task_duration
+    def __init__(self, step_id: str, logger: Logger):
+        self._step_id = step_id
         self._logger = logger
         super().__init__()
 
     def run(self):
         self._logger.print("Starting build task")
-        sleep(self._task_duration)
+        sleep(SleepSchema.tasks[self._step_id])
         self._logger.print("Finished build task")

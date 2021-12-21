@@ -69,5 +69,5 @@ class Connection:
         self._websocket.send(json.dumps(message))
 
     # Main Thread
-    def get_latest_message(self, timeout: float) -> Optional[dict]:
+    def get_latest_message(self, timeout: float) -> dict:
         return self._received_messages.get(block=True, timeout=timeout)

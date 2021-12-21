@@ -24,7 +24,7 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
         Get the event and send the appropriate event
         """
         response = json.loads(text_data)
-        await TaskDirectorController().handle_received(response)
+        await TaskDirectorController().handle_received(response, self.id)
 
     async def send_message(self, res):
         """Receive message from room group"""
