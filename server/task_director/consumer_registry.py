@@ -4,7 +4,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
 class ConsumerRegistry:
-    def __init__(self) -> None:
+    def __init__(self):
         self._consumers: dict[str, AsyncJsonWebsocketConsumer] = {}
         self._lock = threading.Lock()
 

@@ -19,6 +19,7 @@ class SchemaDirector:
         }
 
     async def receive_message(self, msg: dict, consumer_id: str):
+        msg["message_type"] = MessageType(int(msg["message_type"]))
         await self._dispatch.get(msg["message_type"])(msg=msg, consumer_id=consumer_id)
 
     async def _send_build_instructions(self, msg: dict, consumer_id: str):

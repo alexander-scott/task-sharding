@@ -11,10 +11,10 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_add(self.id, self.channel_name)
         await self.accept()
-        await TaskDirectorController().register_consumer(self.id, self)
+        TaskDirectorController().register_consumer(self.id, self)
 
     async def disconnect(self, close_code):
-        await TaskDirectorController().deregister_consumer(self.id)
+        TaskDirectorController().deregister_consumer(self.id)
         await self.channel_layer.group_discard(self.id, self.channel_name)
 
     async def receive(self, text_data):
@@ -26,7 +26,9 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
         await TaskDirectorController().handle_received(response, self.id)
 
     async def send_message(self, res):
-        """Receive message from room group"""
+        """
+        Receive message from channel layer
+        """
         # Send message to WebSocket
         await self.send(
             text_data=json.dumps(

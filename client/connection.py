@@ -68,6 +68,7 @@ class Connection:
     def send_message(self, message: dict):
         self._websocket.send(json.dumps(message))
 
+    # Main Thread
     def close_websocket(self):
         self._websocket.close()
 
