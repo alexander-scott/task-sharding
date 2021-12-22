@@ -1,5 +1,4 @@
 import json
-import uuid
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from task_director.controller import TaskDirectorController
