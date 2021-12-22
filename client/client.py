@@ -13,6 +13,7 @@ class MessageType(int, enum.Enum):
     INIT = 1
     BUILD_INSTRUCTION = 2
     STEP_COMPLETE = 3
+    SCHEMA_COMPLETE = 4
 
 
 class Controller:
@@ -21,7 +22,11 @@ class Controller:
         self._connection = connection
         self._logger = logger
         self._task_thread = None
-        self._dispatch = {MessageType.BUILD_INSTRUCTION: self._process_build_instructions}
+        self._schema_complete = False
+        self._dispatch = {
+            MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
+            MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
+        }
 
     def run(self):
         initial_message = {
@@ -34,21 +39,16 @@ class Controller:
         self._logger.print("Sending initial message: " + str(initial_message))
         self._connection.send_message(initial_message)
 
-        # Start background message handler
-        background_message_thread = threading.Thread(target=self._background_message_handler)
-        background_message_thread.daemon = True
-        background_message_thread.start()
-
-        background_message_thread.join()
-
-    def _background_message_handler(self):
-        while threading.main_thread().is_alive():
+        while threading.main_thread().is_alive() and not self._schema_complete:
             try:
-                # Wait for next message
-                response = self._connection.get_latest_message(1)
+                response = self._connection.get_latest_message(1)  # Wait for next message
                 self._process_message(json.loads(response))
             except Empty:
+                # print("Errors -- schema completed: " + str(self._schema_complete))
                 pass
+
+        print("Closing websocket")
+        self._connection.close_websocket()
 
     def _process_message(self, msg: dict) -> bool:
         msg["message_type"] = MessageType(int(msg["payload"]["message_type"]))
@@ -57,6 +57,7 @@ class Controller:
     def _process_build_instructions(self, msg: dict):
         self._logger.print("Received build instructions message: " + str(msg))
         self._task_thread = threading.Thread(target=lambda: self._run_build_instructions(msg))
+        self._task_thread.daemon = True
         self._task_thread.start()
         return True
 
@@ -64,13 +65,18 @@ class Controller:
         step_id = msg["payload"]["step_id"]
         task = Task(step_id, self._logger)
         task.run()
-        initial_message = {
+        step_message = {
             "message_type": MessageType.STEP_COMPLETE,
             "schema_id": "1",
             "step_id": step_id,
         }
-        self._logger.print("Sending initial message: " + str(initial_message))
-        self._connection.send_message(initial_message)
+        self._logger.print("Sending step complete message: " + str(step_message))
+        self._connection.send_message(step_message)
+
+    def _process_schema_complete(self, msg: dict):
+        self._logger.print("Received schema complete message: " + str(msg))
+        self._schema_complete = True
+        return True
 
 
 def main(configuration):
