@@ -13,8 +13,15 @@ class SchemaDirector:
         self._schema_consumers = set()
         self._lock = threading.Lock()
         self._to_do_steps = [i for i in range(1, total_steps + 1)]
+        self._dispatch = {
+            MessageType.INIT: self._send_build_instructions,
+            MessageType.STEP_COMPLETE: self._receive_step_completed,
+        }
 
-    async def add(self, consumer_id: str):
+    async def receive_message(self, msg: dict, consumer_id: str):
+        await self._dispatch.get(msg["message_type"])(msg=msg, consumer_id=consumer_id)
+
+    async def _send_build_instructions(self, msg: dict, consumer_id: str):
         with self._lock:
             print(
                 "For Schema "
@@ -45,16 +52,17 @@ class SchemaDirector:
                     )
                 )
 
-    async def step_completed(self, consumer_id: str, step_id: str):
+    async def _receive_step_completed(self, msg: dict, consumer_id: str):
         with self._lock:
+            step_id = msg["step_id"]
             del self._in_progress_steps[int(step_id)]
             steps_not_started = len(self._to_do_steps)
             steps_in_progress = len(self._in_progress_steps)
 
         if steps_not_started > 0 or steps_in_progress > 0:
-            await self.add(consumer_id)
+            await self._send_build_instructions(msg, consumer_id)
 
-    async def schema_completed(self):
+    async def check_if_schema_is_completed(self):
         with self._lock:
             steps_not_started = len(self._to_do_steps)
             steps_in_progress = len(self._in_progress_steps)
