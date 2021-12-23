@@ -7,7 +7,8 @@
 	"settings": {
 		"editor.formatOnSave": true,
 		"git.confirmSync": false,
-		"git.autofetch": true
+		"git.autofetch": true,
+		"bazel.buildifierFixOnFormat": true,
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
@@ -15,6 +16,7 @@
 		"vscode-icons-team.vscode-icons",
 		"eamodio.gitlens",
 		"streetsidesoftware.code-spell-checker",
+		"bazelbuild.vscode-bazel",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
