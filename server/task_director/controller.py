@@ -57,6 +57,7 @@ class _Controller:
 
     def _remove_schema_director(self, msg: dict):
         schema_id = msg["schema_id"]
+        print("Deleting schema director with ID " + schema_id)
         del self._schema_directors[schema_id]
 
     def register_consumer(self, uuid: str, consumer: AsyncJsonWebsocketConsumer):

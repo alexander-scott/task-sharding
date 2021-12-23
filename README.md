@@ -73,6 +73,7 @@ The Central Authority will receive task requests and prioritise them accordingly
 - [x] Change the client to run the websocket on a background thread. https://stackoverflow.com/a/29153505
 - [x] Change the client to send identifying information to the server. E.g. schema ID.
 - [x] Create a shell script that simulates multiple clients.
+- [ ] Ensure all threads are cleaned up in all scenarios. https://stackoverflow.com/questions/30127790/python-multiprocessing-threading-cleanup/30133147
 - [ ] Enable the client to call bazel via a subprocess.
 - [ ] Enable a running bazel process to be killed.
 

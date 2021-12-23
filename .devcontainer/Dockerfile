@@ -18,6 +18,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends python3-pip
 
-RUN /usr/bin/python3 -m pip install -U black && /usr/bin/python3 -m pip install -U django==3.1 \
+RUN /usr/bin/python3 -m pip install -U black==21.12b0 && /usr/bin/python3 -m pip install -U django==3.1 \
     && /usr/bin/python3 -m pip install -U channels==3.0.1 && /usr/bin/python3 -m pip install -U channels_redis==3.2 \
-    && /usr/bin/python3 -m pip install -U websocket-client
+    && /usr/bin/python3 -m pip install -U websocket-client==1.2.3
