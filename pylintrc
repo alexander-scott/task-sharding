@@ -12,7 +12,7 @@ extension-pkg-allow-list=
 extension-pkg-whitelist=
 
 # Specify a score threshold to be exceeded before program exits with error.
-fail-under=7
+fail-under=8.8
 
 # Files or directories to be skipped. They should be base names, not paths.
 ignore=CVS
@@ -69,14 +69,9 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=raw-checker-failed,
-        bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead,
+disable=missing-module-docstring,
+        missing-function-docstring,
+        missing-class-docstring,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

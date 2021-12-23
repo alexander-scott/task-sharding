@@ -1,9 +1,9 @@
+from time import sleep
+
 import json
 import queue
 import threading
 import websocket
-from typing import Optional
-from time import sleep
 
 from logger import Logger
 
@@ -26,27 +26,27 @@ class Connection:
     def _init_connection(self, server_url: str) -> websocket.WebSocketApp:
         self._logger.print("Initialising connection...")
         websocket.enableTrace(False)
-        ws = websocket.WebSocketApp(
+        web_socket = websocket.WebSocketApp(
             server_url,
             on_open=self._on_open,
             on_message=self._on_message,
             on_error=self._on_error,
             on_close=self._on_close,
         )
-        wst = threading.Thread(target=ws.run_forever)
+        wst = threading.Thread(target=web_socket.run_forever)
         wst.daemon = True
         wst.start()
 
         connection_timeout = INITIAL_CONN_TIMEOUT
-        if ws.sock:
-            while not ws.sock.connected and connection_timeout > 0:
+        if web_socket.sock:
+            while not web_socket.sock.connected and connection_timeout > 0:
                 connection_timeout -= 1
                 sleep(1)
 
-        if not ws.sock.connected:
+        if not web_socket.sock.connected:
             raise Exception("Failed to connect")
 
-        return ws
+        return web_socket
 
     # WS Thread
     def _on_message(self, ws: websocket.WebSocketApp, message: dict):

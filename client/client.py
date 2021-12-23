@@ -112,5 +112,4 @@ def parse_input_arguments():
 
 
 if __name__ == "__main__":
-    configuration = parse_input_arguments()
-    main(configuration)
+    main(parse_input_arguments())
