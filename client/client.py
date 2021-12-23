@@ -2,11 +2,12 @@ import argparse
 import json
 import queue
 import threading
+from websocket import WebSocketConnectionClosedException
 
 from connection import Connection
 from logger import Logger
 from message_type import MessageType
-from task import Task
+from task.sleep_task import SleepTask
 
 
 class Client:
@@ -20,7 +21,7 @@ class Client:
         }
         # We do not need a lock when reading/writing boolean values as they are thread-safe.
         # https://stackoverflow.com/a/9620974
-        self._schema_complete = False
+        self._message_listening = False
         self._build_in_progress = False
         self._build_in_progress_lock = threading.Lock()
 
@@ -31,16 +32,24 @@ class Client:
         self._logger.print("Sending initial message: " + str(initial_message))
         self._connection.send_message(initial_message)
 
-        # Run an infinite loop that is constantly waiting for messages.
-        while threading.main_thread().is_alive() and not self._schema_complete:
-            try:
-                response = self._connection.get_latest_message(None)
-                self._process_message(json.loads(response))
-            except queue.Empty:
-                pass
+        self._message_listening = True
+        background_msg_thread = threading.Thread(target=self._run_background_message_thread)
+        background_msg_thread.daemon = True
+        background_msg_thread.start()
+
+        background_msg_thread.join()
 
         self._logger.print("Closing websocket")
         self._connection.close_websocket()
+
+    def _run_background_message_thread(self):
+        # Run an infinite loop that is constantly waiting for messages.
+        while self._message_listening:
+            try:
+                response = self._connection.get_latest_message(1)
+                self._process_message(json.loads(response))
+            except queue.Empty:
+                continue
 
     def _process_message(self, msg: dict) -> bool:
         msg["message_type"] = MessageType(int(msg["payload"]["message_type"]))
@@ -70,7 +79,7 @@ class Client:
         if not self._build_in_progress:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
 
-        task = Task(step_id, self._logger)
+        task = SleepTask(step_id, self._logger)
         task.run()
 
         self._build_in_progress = False
@@ -79,7 +88,11 @@ class Client:
         step_message["step_id"] = step_id
 
         self._logger.print("Sending step complete message: " + str(step_message))
-        self._connection.send_message(step_message)
+        try:
+            self._connection.send_message(step_message)
+        except WebSocketConnectionClosedException as e:
+            self._logger.print("Failed to send message to server: " + str(e))
+            self._message_listening = False
 
     def _process_schema_complete(self, msg: dict):
         self._logger.print("Received schema complete message: " + str(msg))

@@ -2,9 +2,7 @@ from time import sleep
 from logger import Logger
 
 
-class AbstractTask:
-    def run(self):
-        raise NotImplementedError()
+from task.abstract_task import AbstractTask
 
 
 class SleepSchema:
@@ -17,7 +15,7 @@ class SleepSchema:
     }
 
 
-class Task(AbstractTask):
+class SleepTask(AbstractTask):
     def __init__(self, step_id: str, logger: Logger):
         self._step_id = step_id
         self._logger = logger

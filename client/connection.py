@@ -37,6 +37,8 @@ class Connection:
         wst.daemon = True
         wst.start()
 
+        sleep(1)
+
         connection_timeout = INITIAL_CONN_TIMEOUT
         if web_socket.sock:
             while not web_socket.sock.connected and connection_timeout > 0:
