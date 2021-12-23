@@ -17,10 +17,11 @@ class SleepSchema:
 
 
 class SleepTask(AbstractTask):
-    def __init__(self, step_id: str, logger: Logger):
-        self._step_id = step_id
+    def set_logger(self, logger: Logger):
         self._logger = logger
-        super().__init__()
+
+    def set_step_id(self, step_id: str):
+        self._step_id = step_id
 
     def run(self):
         self._logger.print("Starting build task")

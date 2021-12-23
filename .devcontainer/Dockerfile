@@ -34,4 +34,5 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 RUN /usr/bin/python3 -m pip install -U black==21.12b0 && /usr/bin/python3 -m pip install -U django==3.1 \
     && /usr/bin/python3 -m pip install -U channels==3.0.1 && /usr/bin/python3 -m pip install -U channels_redis==3.2 \
-    && /usr/bin/python3 -m pip install -U websocket-client==1.2.3 && /usr/bin/python3 -m pip install -U pylint==2.12.2
+    && /usr/bin/python3 -m pip install -U websocket-client==1.2.3 && /usr/bin/python3 -m pip install -U pylint==2.12.2 \
+    && /usr/bin/python3 -m pip install -U PyYAML==6.0

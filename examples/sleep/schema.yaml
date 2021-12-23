@@ -1,0 +1,7 @@
+name: sleep
+task_type: SleepTask
+steps:
+  - task: 5
+  - task: 8
+  - task: 2
+  - task: 4

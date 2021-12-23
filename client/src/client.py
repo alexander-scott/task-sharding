@@ -1,12 +1,15 @@
 import json
 import queue
 import threading
+
 from websocket import WebSocketConnectionClosedException
 
 from src.connection import Connection
 from src.logger import Logger
 from src.message_type import MessageType
+from src.schema_loader import SchemaLoader
 from src.task.sleep_task import SleepTask
+from src.task.task_factory import get_class_by_name
 
 
 class Client:
@@ -14,6 +17,7 @@ class Client:
         self._config = config
         self._connection = connection
         self._logger = logger
+        self._schema = SchemaLoader.load_schema(config.schema_path)
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
@@ -78,7 +82,9 @@ class Client:
         if not self._build_in_progress:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
 
-        task = SleepTask(step_id, self._logger)
+        task = get_class_by_name(self._schema["task_type"])
+        task.set_logger(self._logger)
+        task.set_step_id(step_id)
         task.run()
 
         self._build_in_progress = False
@@ -95,7 +101,7 @@ class Client:
 
     def _process_schema_complete(self, msg: dict):
         self._logger.print("Received schema complete message: " + str(msg))
-        self._schema_complete = True
+        self._message_listening = False
         return True
 
     def _create_msg(self, msg_type: MessageType):
@@ -103,6 +109,6 @@ class Client:
             "message_type": msg_type,
             "branch": "master",
             "cache_id": "1",
-            "schema_id": self._config.schema_id,
+            "schema_id": self._schema["name"],
             "total_steps": 5,
         }
