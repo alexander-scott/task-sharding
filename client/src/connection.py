@@ -5,7 +5,7 @@ import queue
 import threading
 import websocket
 
-from logger import Logger
+from src.logger import Logger
 
 INITIAL_CONN_TIMEOUT = 5
 

@@ -1,13 +1,12 @@
-import argparse
 import json
 import queue
 import threading
 from websocket import WebSocketConnectionClosedException
 
-from connection import Connection
-from logger import Logger
-from message_type import MessageType
-from task.sleep_task import SleepTask
+from src.connection import Connection
+from src.logger import Logger
+from src.message_type import MessageType
+from src.task.sleep_task import SleepTask
 
 
 class Client:
@@ -107,22 +106,3 @@ class Client:
             "schema_id": self._config.schema_id,
             "total_steps": 5,
         }
-
-
-def main(configuration):
-    logger = Logger(configuration.client_id)
-    with Connection("ws://localhost:8000/ws/api/1/" + configuration.client_id + "/", logger) as connection:
-        client = Client(configuration, connection, logger)
-        client.run()
-
-
-def parse_input_arguments():
-    parser = argparse.ArgumentParser(description="inputs for script")
-    parser.add_argument("client_id", help="Client identifier")
-    parser.add_argument("schema_id", help="Schema identifier")
-    args = parser.parse_args()
-    return args
-
-
-if __name__ == "__main__":
-    main(parse_input_arguments())

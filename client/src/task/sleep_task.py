@@ -1,8 +1,9 @@
 from time import sleep
-from logger import Logger
+
+from src.logger import Logger
 
 
-from task.abstract_task import AbstractTask
+from src.task.abstract_task import AbstractTask
 
 
 class SleepSchema:
