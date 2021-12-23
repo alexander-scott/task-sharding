@@ -51,19 +51,19 @@ class Connection:
         return web_socket
 
     # WS Thread
-    def _on_message(self, ws: websocket.WebSocketApp, message: dict):
+    def _on_message(self, web_socket: websocket.WebSocketApp, message: dict):
         self._received_messages.put(message)
 
     # WS Thread
-    def _on_error(self, ws: websocket.WebSocketApp, error):
+    def _on_error(self, web_socket: websocket.WebSocketApp, error):
         self._logger.print("ERROR: " + str(error))
 
     # WS Thread
-    def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg):
+    def _on_close(self, web_socket: websocket.WebSocketApp, close_status_code, close_msg):
         self._logger.print("### closed ###")
 
     # Main Thread
-    def _on_open(self, ws: websocket.WebSocketApp):
+    def _on_open(self, web_socket: websocket.WebSocketApp):
         self._logger.print("Opened connection")
 
     # Main Thread

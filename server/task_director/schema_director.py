@@ -12,7 +12,7 @@ class SchemaDirector:
         self._in_progress_steps = {}
         self._schema_consumers = set()
         self._lock = threading.Lock()
-        self._to_do_steps = list(range(1, total_steps + 1))
+        self._to_do_steps = list(range(0, total_steps))
         self._dispatch = {
             MessageType.INIT: self._send_build_instructions,
             MessageType.STEP_COMPLETE: self._receive_step_completed,

@@ -8,7 +8,7 @@ from src.connection import Connection
 from src.logger import Logger
 from src.message_type import MessageType
 from src.schema_loader import SchemaLoader
-from src.task.sleep_task import SleepTask
+from src.task.abstract_task import AbstractTask
 from src.task.task_factory import get_class_by_name
 
 
@@ -82,9 +82,9 @@ class Client:
         if not self._build_in_progress:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
 
-        task = get_class_by_name(self._schema["task_type"])
+        task: AbstractTask = get_class_by_name(self._schema["task_type"])
         task.set_logger(self._logger)
-        task.set_step_id(step_id)
+        task.load_schema(self._schema, step_id)
         task.run()
 
         self._build_in_progress = False
@@ -110,5 +110,5 @@ class Client:
             "branch": "master",
             "cache_id": "1",
             "schema_id": self._schema["name"],
-            "total_steps": 5,
+            "total_steps": len(self._schema["steps"]),
         }
