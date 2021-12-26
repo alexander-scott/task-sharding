@@ -65,23 +65,3 @@ A schema is a universe and set of steps. The idea behind the steps is to find ta
 ### The Central Authority
 
 The Central Authority will receive task requests and prioritise them accordingly.
-
-# TODO
-
-## Client
-
-- [x] Change the client to run the websocket on a background thread. https://stackoverflow.com/a/29153505
-- [x] Change the client to send identifying information to the server. E.g. schema ID.
-- [x] Create a shell script that simulates multiple clients.
-- [ ] Ensure all threads are cleaned up in all scenarios. https://stackoverflow.com/questions/30127790/python-multiprocessing-threading-cleanup/30133147
-- [ ] Enable the client to call bazel via a subprocess.
-- [ ] Enable a running bazel process to be killed.
-
-## Server
-
-- [x] Every consumer creates a channel with a unique ID. The ID is requested from the controller.
-- [x] The controller needs to track the current state of each schema instance.
-
-## Test scenario
-
-- [ ] Create a bazel rule that creates 1000 test targets with each having a deterministic "random" sleep time.
