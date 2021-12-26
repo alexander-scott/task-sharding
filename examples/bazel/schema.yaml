@@ -1,0 +1,7 @@
+name: bazel
+task_type: BazelTask
+steps:
+  - task: //:target_1
+  - task: //:target_2
+  - task: //:target_3
+  - task: //:target_4
