@@ -45,11 +45,18 @@ class TaskDirectorTests__Setup(TestCase):
 
 
 class TaskDirectorTests__Messaging(TestCase):
-    def test__send_message(self):
-        controller = TaskDirectorController()
-        created_consumer = MockAsyncJsonWebsocketConsumer("UUID1")
-        controller.register_consumer("UUID1", created_consumer)
+    def setUp(self):
+        self.controller = TaskDirectorController()
+        self.consumer_id = "UUID1"
+        self.consumer = MockAsyncJsonWebsocketConsumer(self.consumer_id)
+        self.controller.register_consumer("UUID1", self.consumer)
 
+    def test__send_init_message(self):
+        """
+        GIVEN a freshly instantiated TaskDirectorController.
+        WHEN a consumer connects and sends an INIT message.
+        EXPECT the server to return to the same consumer a BUILD instruction message.
+        """
         mock_client_init_msg = {
             "message_type": MessageType.INIT,
             "branch": "master",
@@ -68,8 +75,8 @@ class TaskDirectorTests__Messaging(TestCase):
             }
         }
 
-        asyncio.get_event_loop().run_until_complete(controller.handle_received(mock_client_init_msg, "UUID1"))
+        asyncio.get_event_loop().run_until_complete(self.controller.handle_received(mock_client_init_msg, "UUID1"))
 
-        actual_server_build_msg = json.loads(created_consumer.get_sent_data())
+        actual_server_build_msg = json.loads(self.consumer.get_sent_data())
 
         self.assertDictEqual(expected_server_build_msg, actual_server_build_msg)
