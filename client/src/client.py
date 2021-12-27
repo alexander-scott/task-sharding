@@ -87,12 +87,13 @@ class Client:
         if self._config.workspace_path:
             task.set_cwd(self._config.workspace_path)
         task.load_schema(self._schema, step_id)
-        task.run()
+        task_success = task.run()
 
         self._build_in_progress = False
 
         step_message = self._create_msg(MessageType.STEP_COMPLETE)
         step_message["step_id"] = step_id
+        step_message["step_success"] = task_success
 
         self._logger.print("Sending step complete message: " + str(step_message))
         try:

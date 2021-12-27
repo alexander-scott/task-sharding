@@ -56,7 +56,12 @@ class SchemaDirector:
     async def _receive_step_completed(self, msg: dict, consumer_id: str):
         with self._lock:
             step_id = msg["step_id"]
-            del self._in_progress_steps[int(step_id)]
+            step_success = msg["step_success"]
+            if step_success:
+                del self._in_progress_steps[int(step_id)]
+            else:
+                self._to_do_steps.append(int(step_id))
+                pass  # TODO: Do something on a step failure
             steps_not_started = len(self._to_do_steps)
             steps_in_progress = len(self._in_progress_steps)
 
