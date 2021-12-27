@@ -4,19 +4,10 @@ from typing import Optional
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from task_director.consumer_registry import ConsumerRegistry
-from task_director.message_type import MessageType
 from task_director.schema_director import SchemaDirector
 
 
-def TaskDirectorController():
-    if _Controller._instance is None:
-        _Controller._instance = _Controller()
-    return _Controller._instance
-
-
-class _Controller:
-    _instance = None
-
+class TaskDirectorController:
     def __init__(self):
         self._consumer_registry = ConsumerRegistry()
         self._schema_directors: dict[str, SchemaDirector] = {}
@@ -65,3 +56,6 @@ class _Controller:
 
     def deregister_consumer(self, uuid: str):
         self._consumer_registry.remove_consumer(uuid)
+
+    def get_total_registered_consumers(self) -> int:
+        return self._consumer_registry.get_total_registered_consumers()
