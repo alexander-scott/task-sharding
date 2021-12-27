@@ -11,5 +11,5 @@ class AbstractTask:
     def load_schema(self, schema: dict, step_id: str):
         raise NotImplementedError()
 
-    def run(self):
+    def run(self) -> bool:
         raise NotImplementedError()
