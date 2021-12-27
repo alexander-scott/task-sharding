@@ -24,3 +24,7 @@ class ConsumerRegistry:
     def get_consumer(self, consumer_id: str) -> AsyncJsonWebsocketConsumer:
         with self._lock:
             return self._consumers[consumer_id]
+
+    def get_total_registered_consumers(self) -> int:
+        with self._lock:
+            return len(self._consumers)
