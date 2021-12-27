@@ -84,6 +84,8 @@ class Client:
 
         task: AbstractTask = get_class_by_name(self._schema["task_type"])
         task.set_logger(self._logger)
+        if self._config.workspace_path:
+            task.set_cwd(self._config.workspace_path)
         task.load_schema(self._schema, step_id)
         task.run()
 
