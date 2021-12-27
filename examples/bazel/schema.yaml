@@ -1,7 +1,11 @@
 name: bazel
 task_type: BazelTask
 steps:
-  - task: //:target_1
-  - task: //:target_2
-  - task: //:target_3
-  - task: //:target_4
+  - task: //:test_my_script_1
+  - task: //:test_my_script_2
+  - task: //:test_my_script_3
+  - task: //:test_my_script_4
+  - task: //:test_my_script_5
+  - task: //:test_my_script_6
+  - task: //:test_my_script_7
+  - task: //:test_my_script_8

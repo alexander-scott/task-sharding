@@ -8,6 +8,6 @@ class BazelTask(AbstractTask):
 
     def run(self):
         self._logger.print("Starting build task")
-        proc = subprocess.Popen(["bazel", "version"])
+        proc = subprocess.Popen(["bazel", "test", self._target], cwd=self._cwd)
         proc.communicate()
         self._logger.print("Finished build task")
