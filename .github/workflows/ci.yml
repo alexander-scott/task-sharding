@@ -24,5 +24,5 @@ jobs:
         pylint $(find . -name "*.py" | xargs)
     - name: Run unit tests
       run: |
-        python server/manage.py test task_director
+        python server/manage.py test task_director.test.tests
         python -m unittest discover client

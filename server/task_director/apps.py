@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from task_director.controller import TaskDirectorController
+from task_director.src.controller import TaskDirectorController
 
 
 class TaskDirectorConfig(AppConfig):

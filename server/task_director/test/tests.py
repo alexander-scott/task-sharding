@@ -3,8 +3,8 @@ import json
 
 from django.test import TestCase
 
-from task_director.controller import TaskDirectorController
-from task_director.message_type import MessageType
+from task_director.src.controller import TaskDirectorController
+from task_director.src.message_type import MessageType
 
 
 class MockAsyncJsonWebsocketConsumer:
