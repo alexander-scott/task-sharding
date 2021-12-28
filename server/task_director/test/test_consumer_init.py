@@ -9,7 +9,7 @@ from task_director.src.message_type import MessageType
 from task_director.test.mock_classes.mock_consumer import MockConsumer
 
 
-class TaskDirectorTests__Messaging(TestCase):
+class TaskDirectorTests__ConsumerInit(TestCase):
     def setUp(self):
         self.controller = TaskDirectorController()
 
@@ -32,7 +32,7 @@ class TaskDirectorTests__Messaging(TestCase):
 
         expected_server_build_msg = {
             "consumer_id": consumer_id,
-            "message_type": 2,
+            "message_type": MessageType.BUILD_INSTRUCTION,
             "branch": "master",
             "cache_id": "1",
             "schema_id": "1",
@@ -47,10 +47,10 @@ class TaskDirectorTests__Messaging(TestCase):
 
     def test__two_consumers_connected(self):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
-        WHEN two consumer connect and send INIT messages with two steps.
+        GIVEN  a freshly instantiated TaskDirectorController.
+        WHEN   two consumer connect and send INIT messages with two steps.
         EXPECT the server to return to the first consumer a build instruction for the first step.
-        AND the server to return to the second consumer a build instruction for the second step.
+        AND    the server to return to the second consumer a build instruction for the second step.
         """
         consumer_id_1 = "UUID1"
         consumer_1 = MockConsumer(consumer_id_1)
@@ -67,7 +67,7 @@ class TaskDirectorTests__Messaging(TestCase):
         }
         expected_server_build_msg_1 = {
             "consumer_id": consumer_id_1,
-            "message_type": 2,
+            "message_type": MessageType.BUILD_INSTRUCTION,
             "branch": "master",
             "cache_id": "1",
             "schema_id": "1",
@@ -75,7 +75,7 @@ class TaskDirectorTests__Messaging(TestCase):
         }
         expected_server_build_msg_2 = {
             "consumer_id": consumer_id_2,
-            "message_type": 2,
+            "message_type": MessageType.BUILD_INSTRUCTION,
             "branch": "master",
             "cache_id": "1",
             "schema_id": "1",
