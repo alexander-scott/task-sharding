@@ -41,14 +41,12 @@ class SchemaDirector:
                 await self._consumer_registry.get_consumer(consumer_id).send(
                     text_data=json.dumps(
                         {
-                            "payload": {
-                                "consumer_id": consumer_id,
-                                "message_type": MessageType.BUILD_INSTRUCTION,
-                                "branch": "master",
-                                "cache_id": "1",
-                                "schema_id": self._schema_id,
-                                "step_id": str(step),
-                            },
+                            "consumer_id": consumer_id,
+                            "message_type": MessageType.BUILD_INSTRUCTION,
+                            "branch": "master",
+                            "cache_id": "1",
+                            "schema_id": self._schema_id,
+                            "step_id": str(step),
                         }
                     )
                 )
@@ -80,11 +78,9 @@ class SchemaDirector:
                     await self._consumer_registry.get_consumer(consumer_id).send(
                         text_data=json.dumps(
                             {
-                                "payload": {
-                                    "consumer_id": consumer_id,
-                                    "message_type": MessageType.SCHEMA_COMPLETE,
-                                    "schema_id": self._schema_id,
-                                },
+                                "consumer_id": consumer_id,
+                                "message_type": MessageType.SCHEMA_COMPLETE,
+                                "schema_id": self._schema_id,
                             }
                         )
                     )

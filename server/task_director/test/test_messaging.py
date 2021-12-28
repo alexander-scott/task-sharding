@@ -31,14 +31,12 @@ class TaskDirectorTests__Messaging(TestCase):
         }
 
         expected_server_build_msg = {
-            "payload": {
-                "consumer_id": consumer_id,
-                "message_type": 2,
-                "branch": "master",
-                "cache_id": "1",
-                "schema_id": "1",
-                "step_id": "0",
-            }
+            "consumer_id": consumer_id,
+            "message_type": 2,
+            "branch": "master",
+            "cache_id": "1",
+            "schema_id": "1",
+            "step_id": "0",
         }
 
         asyncio.get_event_loop().run_until_complete(self.controller.handle_received(mock_client_init_msg, consumer_id))
@@ -68,24 +66,20 @@ class TaskDirectorTests__Messaging(TestCase):
             "total_steps": 2,
         }
         expected_server_build_msg_1 = {
-            "payload": {
-                "consumer_id": consumer_id_1,
-                "message_type": 2,
-                "branch": "master",
-                "cache_id": "1",
-                "schema_id": "1",
-                "step_id": "1",
-            }
+            "consumer_id": consumer_id_1,
+            "message_type": 2,
+            "branch": "master",
+            "cache_id": "1",
+            "schema_id": "1",
+            "step_id": "1",
         }
         expected_server_build_msg_2 = {
-            "payload": {
-                "consumer_id": consumer_id_2,
-                "message_type": 2,
-                "branch": "master",
-                "cache_id": "1",
-                "schema_id": "1",
-                "step_id": "0",
-            }
+            "consumer_id": consumer_id_2,
+            "message_type": 2,
+            "branch": "master",
+            "cache_id": "1",
+            "schema_id": "1",
+            "step_id": "0",
         }
 
         asyncio.get_event_loop().run_until_complete(

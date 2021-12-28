@@ -64,14 +64,12 @@ class TestClient(unittest.TestCase):
             connection.received_messages.put(
                 json.dumps(
                     {
-                        "payload": {
-                            "consumer_id": "UUID1",
-                            "message_type": 2,
-                            "branch": "master",
-                            "cache_id": "1",
-                            "schema_id": "sleep",
-                            "step_id": "0",
-                        }
+                        "consumer_id": "UUID1",
+                        "message_type": 2,
+                        "branch": "master",
+                        "cache_id": "1",
+                        "schema_id": "sleep",
+                        "step_id": "0",
                     }
                 )
             )
@@ -83,14 +81,12 @@ class TestClient(unittest.TestCase):
             connection.received_messages.put(
                 json.dumps(
                     {
-                        "payload": {
-                            "consumer_id": "UUID1",
-                            "message_type": 4,
-                            "branch": "master",
-                            "cache_id": "1",
-                            "schema_id": "sleep",
-                            "step_id": "0",
-                        }
+                        "consumer_id": "UUID1",
+                        "message_type": 4,
+                        "branch": "master",
+                        "cache_id": "1",
+                        "schema_id": "sleep",
+                        "step_id": "0",
                     }
                 )
             )

@@ -55,7 +55,7 @@ class Client:
                 continue
 
     def _process_message(self, msg: dict) -> bool:
-        msg["message_type"] = MessageType(int(msg["payload"]["message_type"]))
+        msg["message_type"] = MessageType(int(msg["message_type"]))
         return self._dispatch.get(msg["message_type"])(msg=msg)
 
     def _process_build_instructions(self, msg: dict):
@@ -77,7 +77,7 @@ class Client:
     def _run_build_instructions(self, msg: dict):
         # This method executes a build instruction task and sends a message to the
         # server when it is complete.
-        step_id = msg["payload"]["step_id"]
+        step_id = msg["step_id"]
 
         if not self._build_in_progress:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
