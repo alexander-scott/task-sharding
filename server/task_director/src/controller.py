@@ -3,8 +3,8 @@ from typing import Optional
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from task_director.consumer_registry import ConsumerRegistry
-from task_director.schema_director import SchemaDirector
+from task_director.src.consumer_registry import ConsumerRegistry
+from task_director.src.schema_director import SchemaDirector
 
 
 class TaskDirectorController:

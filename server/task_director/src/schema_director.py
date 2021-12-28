@@ -1,7 +1,7 @@
 import json
 import threading
-from task_director.consumer_registry import ConsumerRegistry
-from task_director.message_type import MessageType
+from task_director.src.consumer_registry import ConsumerRegistry
+from task_director.src.message_type import MessageType
 
 
 class SchemaDirector:

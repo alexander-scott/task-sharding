@@ -1,7 +1,7 @@
 import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from task_director.controller import TaskDirectorController
+from task_director.src.controller import TaskDirectorController
 
 
 class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
