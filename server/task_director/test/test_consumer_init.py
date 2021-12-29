@@ -13,11 +13,11 @@ class TaskDirectorTests__ConsumerInit(TestCase):
     def setUp(self):
         self.controller = TaskDirectorController()
 
-    def test__one_consumer_connected(self):
+    def test__when_one_consumer_connected__expect_server_to_return_msg(self):
         """
         GIVEN a freshly instantiated TaskDirectorController.
-        WHEN a consumer connects and sends an INIT message with a single step.
-        EXPECT the server to return to the same consumer a BUILD instruction message.
+        WHEN a consumer connects and sends an init message with a single step.
+        EXPECT the server to return to the same consumer a build instruction message.
         """
         consumer_id = "UUID1"
         consumer = MockConsumer(consumer_id)
@@ -31,7 +31,6 @@ class TaskDirectorTests__ConsumerInit(TestCase):
         }
 
         expected_server_build_msg = {
-            "consumer_id": consumer_id,
             "message_type": MessageType.BUILD_INSTRUCTION,
             "branch": "master",
             "cache_id": "1",
@@ -45,7 +44,7 @@ class TaskDirectorTests__ConsumerInit(TestCase):
 
         self.assertDictEqual(expected_server_build_msg, actual_server_build_msg)
 
-    def test__two_consumers_connected(self):
+    def test__when_two_consumers_connected__expect_server_to_return_two_msgs(self):
         """
         GIVEN  a freshly instantiated TaskDirectorController.
         WHEN   two consumer connect and send INIT messages with two steps.
@@ -66,7 +65,6 @@ class TaskDirectorTests__ConsumerInit(TestCase):
             "total_steps": 2,
         }
         expected_server_build_msg_1 = {
-            "consumer_id": consumer_id_1,
             "message_type": MessageType.BUILD_INSTRUCTION,
             "branch": "master",
             "cache_id": "1",
@@ -74,7 +72,6 @@ class TaskDirectorTests__ConsumerInit(TestCase):
             "step_id": "1",
         }
         expected_server_build_msg_2 = {
-            "consumer_id": consumer_id_2,
             "message_type": MessageType.BUILD_INSTRUCTION,
             "branch": "master",
             "cache_id": "1",
