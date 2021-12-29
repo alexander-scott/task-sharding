@@ -30,7 +30,13 @@ class Client:
 
     def run(self):
         # Send a message to the server about our requirements.
-        initial_message = self._create_msg(MessageType.INIT)
+        initial_message = {
+            "message_type": MessageType.INIT,
+            "branch": "master",
+            "cache_id": "1",
+            "schema_id": self._schema["name"],
+            "total_steps": len(self._schema["steps"]),
+        }
 
         self._logger.print("Sending initial message: " + str(initial_message))
         self._connection.send_message(initial_message)
@@ -91,9 +97,12 @@ class Client:
 
         self._build_in_progress = False
 
-        step_message = self._create_msg(MessageType.STEP_COMPLETE)
-        step_message["step_id"] = step_id
-        step_message["step_success"] = task_success
+        step_message = {
+            "message_type": MessageType.STEP_COMPLETE,
+            "schema_id": self._schema["name"],
+            "step_id": step_id,
+            "step_success": task_success,
+        }
 
         self._logger.print("Sending step complete message: " + str(step_message))
         try:
@@ -106,12 +115,3 @@ class Client:
         self._logger.print("Received schema complete message: " + str(msg))
         self._message_listening = False
         return True
-
-    def _create_msg(self, msg_type: MessageType):
-        return {
-            "message_type": msg_type,
-            "branch": "master",
-            "cache_id": "1",
-            "schema_id": self._schema["name"],
-            "total_steps": len(self._schema["steps"]),
-        }

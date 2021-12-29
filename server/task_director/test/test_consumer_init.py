@@ -32,8 +32,6 @@ class TaskDirectorTests__ConsumerInit(TestCase):
 
         expected_server_build_msg = {
             "message_type": MessageType.BUILD_INSTRUCTION,
-            "branch": "master",
-            "cache_id": "1",
             "schema_id": "1",
             "step_id": "0",
         }
@@ -66,15 +64,11 @@ class TaskDirectorTests__ConsumerInit(TestCase):
         }
         expected_server_build_msg_1 = {
             "message_type": MessageType.BUILD_INSTRUCTION,
-            "branch": "master",
-            "cache_id": "1",
             "schema_id": "1",
             "step_id": "1",
         }
         expected_server_build_msg_2 = {
             "message_type": MessageType.BUILD_INSTRUCTION,
-            "branch": "master",
-            "cache_id": "1",
             "schema_id": "1",
             "step_id": "0",
         }

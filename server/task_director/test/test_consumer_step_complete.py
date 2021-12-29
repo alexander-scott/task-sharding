@@ -81,9 +81,6 @@ class TaskDirectorTests__StepComplete(TestCase):
 
         client_step_complete_msg = {
             "message_type": MessageType.STEP_COMPLETE,
-            "branch": "master",
-            "cache_id": "1",
-            "total_steps": 1,
             "schema_id": "1",
             "step_id": "0",
             "step_success": False,
@@ -94,8 +91,6 @@ class TaskDirectorTests__StepComplete(TestCase):
         )
         expected_schema_complete_msg = {
             "message_type": MessageType.BUILD_INSTRUCTION,
-            "branch": "master",
-            "cache_id": "1",
             "schema_id": "1",
             "step_id": "0",
         }

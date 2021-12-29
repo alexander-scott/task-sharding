@@ -42,8 +42,6 @@ class SchemaDirector:
                     text_data=json.dumps(
                         {
                             "message_type": MessageType.BUILD_INSTRUCTION,
-                            "branch": "master",
-                            "cache_id": "1",
                             "schema_id": self._schema_id,
                             "step_id": str(step),
                         }

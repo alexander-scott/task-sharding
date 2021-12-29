@@ -1,5 +1,6 @@
 from src.client import Client
 from src.logger import Logger
+from src.message_type import MessageType
 
 import json
 import queue
@@ -64,10 +65,7 @@ class TestClient(unittest.TestCase):
             connection.received_messages.put(
                 json.dumps(
                     {
-                        "consumer_id": "UUID1",
-                        "message_type": 2,
-                        "branch": "master",
-                        "cache_id": "1",
+                        "message_type": MessageType.BUILD_INSTRUCTION,
                         "schema_id": "sleep",
                         "step_id": "0",
                     }
@@ -81,12 +79,8 @@ class TestClient(unittest.TestCase):
             connection.received_messages.put(
                 json.dumps(
                     {
-                        "consumer_id": "UUID1",
-                        "message_type": 4,
-                        "branch": "master",
-                        "cache_id": "1",
+                        "message_type": MessageType.SCHEMA_COMPLETE,
                         "schema_id": "sleep",
-                        "step_id": "0",
                     }
                 )
             )
@@ -95,7 +89,7 @@ class TestClient(unittest.TestCase):
 
             self.assertDictEqual(
                 {
-                    "message_type": 1,
+                    "message_type": MessageType.INIT,
                     "branch": "master",
                     "cache_id": "1",
                     "schema_id": "sleep",
@@ -105,13 +99,10 @@ class TestClient(unittest.TestCase):
             )
             self.assertDictEqual(
                 {
-                    "message_type": 3,
-                    "branch": "master",
-                    "cache_id": "1",
+                    "message_type": MessageType.STEP_COMPLETE,
                     "schema_id": "sleep",
                     "step_id": "0",
                     "step_success": True,
-                    "total_steps": 4,
                 },
                 step_complete_msg,
             )
