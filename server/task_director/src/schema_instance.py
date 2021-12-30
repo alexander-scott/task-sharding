@@ -4,21 +4,18 @@ import threading
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from task_director.src.consumer_registry import ConsumerRegistry
 from task_director.src.message_type import MessageType
+from task_director.src.schema_details import SchemaDetails
 
 
 class SchemaInstance:
-    def __init__(self, cache_id: str, schema_id: str, total_steps: int):
-        # Schema instance details
-        self.cache_id = cache_id
-        self.schema_id = schema_id
-        self.total_steps = total_steps
+    def __init__(self, schema_details: SchemaDetails):
+        self.schema_details = schema_details
 
-        # Schema vars
         self._consumer_registry = ConsumerRegistry()
         self._in_progress_steps = {}
         self._schema_consumers = set()
         self._lock = threading.Lock()
-        self._to_do_steps = list(range(0, total_steps))
+        self._to_do_steps = list(range(0, self.schema_details.total_steps))
         self._dispatch = {
             MessageType.INIT: self._send_build_instructions,
             MessageType.STEP_COMPLETE: self._receive_step_completed,
@@ -44,7 +41,7 @@ class SchemaInstance:
         with self._lock:
             print(
                 "For Schema "
-                + self.schema_id
+                + self.schema_details.schema_id
                 + " there are currently "
                 + str(len(self._to_do_steps))
                 + " steps left to do."
@@ -60,7 +57,7 @@ class SchemaInstance:
                     text_data=json.dumps(
                         {
                             "message_type": MessageType.BUILD_INSTRUCTION,
-                            "schema_id": self.schema_id,
+                            "schema_id": self.schema_details.schema_id,
                             "step_id": str(step),
                         }
                     )
@@ -71,7 +68,7 @@ class SchemaInstance:
             step_id = msg["step_id"]
             step_success = msg["step_success"]
             if step_success:
-                print("Consumer " + consumer_id + " completed step " + step_id + " in " + self.schema_id)
+                print("Consumer " + consumer_id + " completed step " + step_id + " in " + self.schema_details.id)
                 del self._in_progress_steps[int(step_id)]
             else:
                 self._to_do_steps.append(int(step_id))
@@ -88,14 +85,14 @@ class SchemaInstance:
             steps_in_progress = len(self._in_progress_steps)
 
             if steps_not_started == 0 and steps_in_progress == 0:
-                print("Schema " + self.schema_id + " completed.")
+                print("Schema instance " + self.schema_details.id + " completed.")
                 for consumer_id in self._schema_consumers:
                     print("Sending schema complete message to consumer: " + consumer_id)
                     await self._consumer_registry.get_consumer(consumer_id).send(
                         text_data=json.dumps(
                             {
                                 "message_type": MessageType.SCHEMA_COMPLETE,
-                                "schema_id": self.schema_id,
+                                "schema_id": self.schema_details.schema_id,
                             }
                         )
                     )

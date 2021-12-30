@@ -27,7 +27,7 @@ class TaskDirectorController:
             if self._untriaged_consumer_registry.check_if_consumer_exists(consumer_id):
                 consumer = self._untriaged_consumer_registry.get_consumer(consumer_id, True)
                 schema_instance.register_consumer(consumer_id, consumer)
-                print("Registering " + consumer_id + " in the existing instance.")
+                print("Registering " + consumer_id + " in the existing instance: " + schema_instance.schema_details.id)
 
             # Forward the message to that schema instance
             await schema_instance.receive_message(msg, consumer_id)
