@@ -9,9 +9,12 @@ from task_director.src.message_type import MessageType
 from task_director.test.mock_classes.mock_consumer import MockConsumer
 
 
-class TaskDirectorTests__StepComplete(TestCase):
+class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
     def setUp(self):
         self.controller = TaskDirectorController()
+        self.consumer_id = "UUID1"
+        self.consumer = MockConsumer(self.consumer_id)
+        self.controller.register_consumer(self.consumer_id, self.consumer)
 
     def test__when_one_consumer_connected__and_single_schema_step_is_successful__expect_schema_complete_msg_sent(self):
         """
@@ -21,9 +24,7 @@ class TaskDirectorTests__StepComplete(TestCase):
           AND the consumer subsequently sends a successful step complete message.
         EXPECT the server to return to the same consumer a schema complete message.
         """
-        consumer_id = "UUID1"
-        consumer = MockConsumer(consumer_id)
-        self.controller.register_consumer(consumer_id, consumer)
+
         client_init_msg = {
             "message_type": MessageType.INIT,
             "branch": "master",
@@ -32,27 +33,24 @@ class TaskDirectorTests__StepComplete(TestCase):
             "schema_id": "1",
         }
 
-        asyncio.get_event_loop().run_until_complete(self.controller.handle_received(client_init_msg, consumer_id))
-        consumer.get_sent_data()
+        asyncio.get_event_loop().run_until_complete(self.controller.handle_received(client_init_msg, self.consumer_id))
+        self.consumer.get_sent_data()
 
         client_step_complete_msg = {
             "message_type": MessageType.STEP_COMPLETE,
-            "branch": "master",
-            "cache_id": "1",
-            "total_steps": 1,
             "schema_id": "1",
             "step_id": "0",
             "step_success": True,
         }
 
         asyncio.get_event_loop().run_until_complete(
-            self.controller.handle_received(client_step_complete_msg, consumer_id)
+            self.controller.handle_received(client_step_complete_msg, self.consumer_id)
         )
         expected_schema_complete_msg = {
             "message_type": MessageType.SCHEMA_COMPLETE,
             "schema_id": "1",
         }
-        actual_schema_complete_msg = json.loads(consumer.get_sent_data())
+        actual_schema_complete_msg = json.loads(self.consumer.get_sent_data())
 
         self.assertDictEqual(expected_schema_complete_msg, actual_schema_complete_msg)
 
@@ -64,9 +62,6 @@ class TaskDirectorTests__StepComplete(TestCase):
           AND the consumer subsequently sends a failed step message.
         EXPECT the server to send the same build instruction message to the consumer.
         """
-        consumer_id = "UUID1"
-        consumer = MockConsumer(consumer_id)
-        self.controller.register_consumer(consumer_id, consumer)
         client_init_msg = {
             "message_type": MessageType.INIT,
             "branch": "master",
@@ -75,8 +70,8 @@ class TaskDirectorTests__StepComplete(TestCase):
             "schema_id": "1",
         }
 
-        asyncio.get_event_loop().run_until_complete(self.controller.handle_received(client_init_msg, consumer_id))
-        consumer.get_sent_data()
+        asyncio.get_event_loop().run_until_complete(self.controller.handle_received(client_init_msg, self.consumer_id))
+        self.consumer.get_sent_data()
 
         client_step_complete_msg = {
             "message_type": MessageType.STEP_COMPLETE,
@@ -86,13 +81,13 @@ class TaskDirectorTests__StepComplete(TestCase):
         }
 
         asyncio.get_event_loop().run_until_complete(
-            self.controller.handle_received(client_step_complete_msg, consumer_id)
+            self.controller.handle_received(client_step_complete_msg, self.consumer_id)
         )
         expected_schema_complete_msg = {
             "message_type": MessageType.BUILD_INSTRUCTION,
             "schema_id": "1",
             "step_id": "0",
         }
-        actual_schema_complete_msg = json.loads(consumer.get_sent_data())
+        actual_schema_complete_msg = json.loads(self.consumer.get_sent_data())
 
         self.assertDictEqual(expected_schema_complete_msg, actual_schema_complete_msg)

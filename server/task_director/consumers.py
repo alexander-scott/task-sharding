@@ -5,8 +5,12 @@ from task_director.src.controller import TaskDirectorController
 
 
 class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
+    # We want this instance to be shared across all consumers so we make it a
+    # class attribute, and re-bind it in every object's __init__ method.
+    __controller_instance = TaskDirectorController()
+
     def __init__(self, *args, **kwargs):
-        self._task_director_controller = TaskDirectorController()
+        self._controller = self.__controller_instance
         super().__init__(*args, **kwargs)
 
     async def connect(self):
@@ -15,10 +19,10 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
 
         await self.channel_layer.group_add(self.id, self.channel_name)
         await self.accept()
-        self._task_director_controller.register_consumer(self.id, self)
+        self._controller.register_consumer(self.id, self)
 
     async def disconnect(self, close_code):
-        self._task_director_controller.deregister_consumer(self.id)
+        self._controller.deregister_consumer(self.id)
         await self.channel_layer.group_discard(self.id, self.channel_name)
 
     async def receive(self, text_data):
@@ -27,7 +31,7 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
         Get the event and send the appropriate event
         """
         response = json.loads(text_data)
-        await self._task_director_controller.handle_received(response, self.id)
+        await self._controller.handle_received(response, self.id)
 
     # async def send_message(self, res):
     #     """

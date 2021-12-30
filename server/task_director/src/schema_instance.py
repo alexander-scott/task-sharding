@@ -71,6 +71,7 @@ class SchemaInstance:
             step_id = msg["step_id"]
             step_success = msg["step_success"]
             if step_success:
+                print("Consumer " + consumer_id + " completed step " + step_id + " in " + self.schema_id)
                 del self._in_progress_steps[int(step_id)]
             else:
                 self._to_do_steps.append(int(step_id))

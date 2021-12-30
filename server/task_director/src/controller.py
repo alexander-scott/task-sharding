@@ -20,25 +20,26 @@ class TaskDirectorController:
             # Find a matching schema instance or create one if it does not exist
             schema_instance = self._schema_instance_manager.find_matching_schema_instance(msg, consumer_id)
             if not schema_instance:
+                print("No existing instance found for consumer " + consumer_id)
                 schema_instance = self._schema_instance_manager.create_schema_instance(msg)
 
             # Triage (assign) the current consumer to this schema instance if untriaged
             if self._untriaged_consumer_registry.check_if_consumer_exists(consumer_id):
                 consumer = self._untriaged_consumer_registry.get_consumer(consumer_id, True)
                 schema_instance.register_consumer(consumer_id, consumer)
+                print("Registering " + consumer_id + " in the existing instance.")
 
             # Forward the message to that schema instance
             await schema_instance.receive_message(msg, consumer_id)
             if await schema_instance.check_if_schema_is_completed():
                 self._schema_instance_manager.remove_schema_instance(schema_instance)
 
-    def register_consumer(self, uuid: str, consumer: AsyncJsonWebsocketConsumer):
-        self._untriaged_consumer_registry.add_consumer(uuid, consumer)
+    def register_consumer(self, consumer_id: str, consumer: AsyncJsonWebsocketConsumer):
+        self._untriaged_consumer_registry.add_consumer(consumer_id, consumer)
 
-    def deregister_consumer(self, uuid: str):
-        # self._consumer_registry.remove_consumer(uuid)
-        # TODO: Find all schema instances which have this consumer in progress and inform them
-        pass
+    def deregister_consumer(self, consumer_id: str):
+        self._untriaged_consumer_registry.remove_consumer(consumer_id)
+        self._schema_instance_manager.deregister_consumer(consumer_id)
 
     def get_total_registered_consumers(self) -> int:
         return self._schema_instance_manager.get_total_registered_consumers()

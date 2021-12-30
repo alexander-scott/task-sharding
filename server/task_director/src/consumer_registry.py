@@ -10,16 +10,12 @@ class ConsumerRegistry:
 
     def add_consumer(self, consumer_id: str, consumer: any):
         with self._lock:
-            print("Adding consumer with ID: " + consumer_id)
             self._consumers[consumer_id] = consumer
-            print("Total consumers connected: " + str(len(self._consumers)))
 
     def remove_consumer(self, consumer_id: str):
         with self._lock:
             if consumer_id in self._consumers:
-                print("Removing consumer with ID: " + consumer_id)
                 del self._consumers[consumer_id]
-                print("Total consumers connected: " + str(len(self._consumers)))
 
     def get_consumer(self, consumer_id: str, remove_consumer: bool = False) -> AsyncJsonWebsocketConsumer:
         with self._lock:
