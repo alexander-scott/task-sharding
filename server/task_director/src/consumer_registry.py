@@ -21,9 +21,16 @@ class ConsumerRegistry:
                 del self._consumers[consumer_id]
                 print("Total consumers connected: " + str(len(self._consumers)))
 
-    def get_consumer(self, consumer_id: str) -> AsyncJsonWebsocketConsumer:
+    def get_consumer(self, consumer_id: str, remove_consumer: bool = False) -> AsyncJsonWebsocketConsumer:
         with self._lock:
-            return self._consumers[consumer_id]
+            consumer = self._consumers[consumer_id]
+            if remove_consumer:
+                del self._consumers[consumer_id]
+            return consumer
+
+    def check_if_consumer_exists(self, consumer_id: str) -> bool:
+        with self._lock:
+            return consumer_id in self._consumers
 
     def get_total_registered_consumers(self) -> int:
         with self._lock:

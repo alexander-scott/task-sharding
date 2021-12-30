@@ -9,5 +9,5 @@ class MockConsumer:
     async def send(self, text_data: str):
         self.sent_messages.put(text_data)
 
-    def get_sent_data(self, block=True, timeout=None):
+    def get_sent_data(self, block=True, timeout=1):
         return self.sent_messages.get(block=block, timeout=timeout)

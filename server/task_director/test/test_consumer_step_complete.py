@@ -1,6 +1,5 @@
 import asyncio
 import json
-from queue import Empty
 
 from django.test import TestCase
 
@@ -18,8 +17,8 @@ class TaskDirectorTests__StepComplete(TestCase):
         """
         GIVEN a freshly instantiated TaskDirectorController.
         WHEN a consumer connects and sends an INIT message with a single step,
-        AND the server sends a build instruction message to the consumer,
-        AND the consumer subsequently sends a successful step complete message.
+          AND the server sends a build instruction message to the consumer,
+          AND the consumer subsequently sends a successful step complete message.
         EXPECT the server to return to the same consumer a schema complete message.
         """
         consumer_id = "UUID1"
@@ -61,8 +60,8 @@ class TaskDirectorTests__StepComplete(TestCase):
         """
         GIVEN a freshly instantiated TaskDirectorController.
         WHEN a consumer connects and sends an INIT message with a single step,
-        AND the server sends a build instruction message to the consumer,
-        AND the consumer subsequently sends a failed step message.
+          AND the server sends a build instruction message to the consumer,
+          AND the consumer subsequently sends a failed step message.
         EXPECT the server to send the same build instruction message to the consumer.
         """
         consumer_id = "UUID1"

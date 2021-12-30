@@ -17,15 +17,10 @@ class TaskDirectorTests__Setup(TestCase):
         controller = TaskDirectorController()
         created_consumer = MockConsumer("UUID1")
 
-        registered_consumers = controller.get_total_registered_consumers()
+        registered_consumers = controller.get_total_untriaged_consumers()
         self.assertEqual(0, registered_consumers)
 
         controller.register_consumer("UUID1", created_consumer)
 
-        registered_consumers = controller.get_total_registered_consumers()
+        registered_consumers = controller.get_total_untriaged_consumers()
         self.assertEqual(1, registered_consumers)
-
-        controller.deregister_consumer("UUID1")
-
-        registered_consumers = controller.get_total_registered_consumers()
-        self.assertEqual(0, registered_consumers)
