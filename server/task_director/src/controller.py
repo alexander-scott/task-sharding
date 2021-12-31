@@ -1,10 +1,13 @@
 import threading
+import logging
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from task_director.src.consumer_registry import ConsumerRegistry
 from task_director.src.schema_details import SchemaDetails
 from task_director.src.schema_instance import SchemaInstance
+
+logger = logging.getLogger(__name__)
 
 
 class TaskDirectorController:
@@ -36,29 +39,18 @@ class TaskDirectorController:
         if self._untriaged_consumer_registry.check_if_consumer_exists(consumer_id):
             consumer = self._untriaged_consumer_registry.get_consumer(consumer_id, True)
             schema_instance.register_consumer(consumer_id, consumer)
-            print("Registering " + consumer_id + " in the existing instance: " + schema_instance.schema_details.id)
 
         return schema_instance
 
     def _find_matching_schema_instance(self, msg: dict, consumer_id: str) -> SchemaInstance:
         with self._lock:
-            for instance in self._schema_instances:
-                if instance.is_consumer_registered(consumer_id):
-                    print(
-                        "Consumer "
-                        + consumer_id
-                        + " is already registered within instance: "
-                        + instance.schema_details.id
-                    )
-                    return instance
-
             # TODO: Add more logic to determine which consumers best match to a schema instance.
             # instance. E.g. branch, cache instance, and git commit baseline are all necessary.
             schema_id = msg["schema_id"]
             cache_id = msg["cache_id"]
             for instance in self._schema_instances:
                 if instance.schema_details.schema_id == schema_id and instance.schema_details.cache_id == cache_id:
-                    print(
+                    logger.info(
                         "Consumer "
                         + consumer_id
                         + " would be a perfect fit in an existing instance: "
@@ -66,18 +58,18 @@ class TaskDirectorController:
                     )
                     return instance
 
-            print("No existing instance found for consumer " + consumer_id)
+            logger.info("No existing instance found for consumer " + consumer_id)
             return self._create_schema_instance(msg)
 
     def _create_schema_instance(self, msg: dict) -> SchemaInstance:
         schema_details = SchemaDetails(msg["cache_id"], msg["branch"], msg["schema_id"], msg["total_steps"])
-        print("Creating schema instance with ID: " + schema_details.id)
+        logger.info("Creating schema instance with ID: " + schema_details.id)
         schema_instance = SchemaInstance(schema_details)
         self._schema_instances.append(schema_instance)
         return schema_instance
 
     def _remove_schema_instance(self, schema_instance: SchemaInstance):
-        print("Deleting schema instance with ID " + schema_instance.schema_details.id)
+        logger.info("Deleting schema instance with ID " + schema_instance.schema_details.id)
         with self._lock:
             self._schema_instances.remove(schema_instance)
 
