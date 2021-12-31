@@ -1,23 +1,17 @@
 import asyncio
 import json
-from unittest.mock import AsyncMock, call
+from unittest.mock import call
 
 from django.test import TestCase
 
-from task_director.consumers import TaskDirectorConsumer
-from task_director.src.controller import TaskDirectorController
 from task_director.src.message_type import MessageType
+
+from task_director.test.utils import create_consumer
 
 
 class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
     def setUp(self):
-        self.controller = TaskDirectorController()
-
-        self.consumer = TaskDirectorConsumer()
-        self.consumer.scope = {"url_route": {"kwargs": {"api_version": "1", "id": "UUID1"}}}
-        self.consumer.accept = AsyncMock()
-        self.consumer.send = AsyncMock()
-        self.consumer._controller = self.controller
+        self.consumer = create_consumer("UUID1")
         asyncio.get_event_loop().run_until_complete(self.consumer.connect())
 
     def tearDown(self):

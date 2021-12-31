@@ -1,23 +1,16 @@
 import asyncio
 import json
-from unittest.mock import MagicMock, AsyncMock
 
 from django.test import TestCase
-from task_director.consumers import TaskDirectorConsumer
 
-from task_director.src.controller import TaskDirectorController
 from task_director.src.message_type import MessageType
+
+from task_director.test.utils import create_consumer
 
 
 class TaskDirectorTests__SingleConsumerInit(TestCase):
     def setUp(self):
-        self.controller = TaskDirectorController()
-
-        self.consumer = TaskDirectorConsumer()
-        self.consumer.scope = {"url_route": {"kwargs": {"api_version": "1", "id": "UUID1"}}}
-        self.consumer.accept = AsyncMock()
-        self.consumer.send = AsyncMock()
-        self.consumer._controller = self.controller
+        self.consumer = create_consumer("UUID1")
         asyncio.get_event_loop().run_until_complete(self.consumer.connect())
 
     def tearDown(self):
@@ -50,19 +43,9 @@ class TaskDirectorTests__SingleConsumerInit(TestCase):
 
 class TaskDirectorTests__TwoConsumersInit(TestCase):
     def setUp(self):
-        self.controller = TaskDirectorController()
-
-        self.consumer1 = TaskDirectorConsumer()
-        self.consumer1.scope = {"url_route": {"kwargs": {"api_version": "1", "id": "UUID1"}}}
-        self.consumer1.accept = AsyncMock()
-        self.consumer1.send = AsyncMock()
-        self.consumer1._controller = self.controller
+        self.consumer1 = create_consumer("UUID1")
+        self.consumer2 = create_consumer("UUID2")
         asyncio.get_event_loop().run_until_complete(self.consumer1.connect())
-        self.consumer2 = TaskDirectorConsumer()
-        self.consumer2.scope = {"url_route": {"kwargs": {"api_version": "1", "id": "UUID2"}}}
-        self.consumer2.accept = AsyncMock()
-        self.consumer2.send = AsyncMock()
-        self.consumer2._controller = self.controller
         asyncio.get_event_loop().run_until_complete(self.consumer2.connect())
 
     def tearDown(self):
@@ -121,6 +104,46 @@ class TaskDirectorTests__TwoConsumersInit(TestCase):
             "message_type": MessageType.INIT,
             "branch": "master",
             "cache_id": "2",
+            "schema_id": "1",
+            "total_steps": 1,
+        }
+        expected_server_build_msg_1 = {
+            "message_type": MessageType.BUILD_INSTRUCTION,
+            "schema_id": "1",
+            "step_id": "0",
+        }
+        expected_server_build_msg_2 = {
+            "message_type": MessageType.BUILD_INSTRUCTION,
+            "schema_id": "1",
+            "step_id": "0",
+        }
+
+        asyncio.get_event_loop().run_until_complete(self.consumer1.receive(json.dumps(mock_client_init_msg_1)))
+        asyncio.get_event_loop().run_until_complete(self.consumer2.receive(json.dumps(mock_client_init_msg_2)))
+
+        self.consumer1.send.assert_called_with(text_data=json.dumps(expected_server_build_msg_1))
+        self.consumer2.send.assert_called_with(text_data=json.dumps(expected_server_build_msg_2))
+
+    def test__when_two_consumer_connected__and_branch_is_incompatible__expect_two_schema_director_instances_created(
+        self,
+    ):
+        """
+        GIVEN a freshly instantiated TaskDirectorController.
+        WHEN two consumers connect and send INIT messages with one step,
+          AND each consumer has a different branch.
+        EXPECT a build instruction message with the same step ID to be sent to each consumer.
+        """
+        mock_client_init_msg_1 = {
+            "message_type": MessageType.INIT,
+            "branch": "master",
+            "cache_id": "1",
+            "schema_id": "1",
+            "total_steps": 1,
+        }
+        mock_client_init_msg_2 = {
+            "message_type": MessageType.INIT,
+            "branch": "main",
+            "cache_id": "1",
             "schema_id": "1",
             "total_steps": 1,
         }

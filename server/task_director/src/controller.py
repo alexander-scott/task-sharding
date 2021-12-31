@@ -46,10 +46,15 @@ class TaskDirectorController:
         with self._lock:
             # TODO: Add more logic to determine which consumers best match to a schema instance.
             # instance. E.g. branch, cache instance, and git commit baseline are all necessary.
+            branch = msg["branch"]
             schema_id = msg["schema_id"]
             cache_id = msg["cache_id"]
             for instance in self._schema_instances:
-                if instance.schema_details.schema_id == schema_id and instance.schema_details.cache_id == cache_id:
+                if (
+                    instance.schema_details.schema_id == schema_id
+                    and instance.schema_details.cache_id == cache_id
+                    and instance.schema_details.branch == branch
+                ):
                     logger.info(
                         "Consumer "
                         + consumer_id
