@@ -25,7 +25,7 @@ class SchemaInstance:
         }
 
     def register_consumer(self, uuid: str, consumer: AsyncJsonWebsocketConsumer):
-        logger.info("Registering " + uuid + " in the existing instance: " + self.schema_details.id)
+        self._print_with_prefix("Registering consumer " + uuid)
         self._consumer_registry.add_consumer(uuid, consumer)
 
     def deregister_consumer(self, uuid: str):
@@ -43,19 +43,13 @@ class SchemaInstance:
 
     async def _send_build_instructions(self, msg: dict, consumer_id: str):
         with self._lock:
-            logger.info(
-                "For Schema "
-                + self.schema_details.id
-                + " there are currently "
-                + str(len(self._to_do_steps))
-                + " steps left to do."
-            )
-
             self._schema_consumers.add(consumer_id)
 
             if len(self._to_do_steps) > 0:
                 step = self._to_do_steps.pop()
                 self._in_progress_steps[step] = consumer_id
+
+                self._print_with_prefix("Assigning step ID " + str(step) + " to consumer " + consumer_id)
 
                 await self._consumer_registry.get_consumer(consumer_id).send(
                     text_data=json.dumps(
@@ -72,7 +66,7 @@ class SchemaInstance:
             step_id = msg["step_id"]
             step_success = msg["step_success"]
             if step_success:
-                logger.info("Consumer " + consumer_id + " completed step " + step_id + " in " + self.schema_details.id)
+                self._print_with_prefix("Consumer " + consumer_id + " completed step " + step_id)
                 del self._in_progress_steps[int(step_id)]
             else:
                 self._to_do_steps.append(int(step_id))
@@ -81,6 +75,13 @@ class SchemaInstance:
             steps_in_progress = len(self._in_progress_steps)
 
         if steps_not_started > 0 or steps_in_progress > 0:
+            self._print_with_prefix(
+                "There are currently "
+                + str(steps_not_started)
+                + " steps not yet assigned and "
+                + str(steps_in_progress)
+                + " steps in progress"
+            )
             await self._send_build_instructions(msg, consumer_id)
         else:
             await self.check_if_schema_is_completed()
@@ -91,9 +92,9 @@ class SchemaInstance:
             steps_in_progress = len(self._in_progress_steps)
 
             if steps_not_started == 0 and steps_in_progress == 0:
-                logger.info("Schema instance " + self.schema_details.id + " completed.")
+                self._print_with_prefix("Schema completed")
                 for consumer_id in self._schema_consumers:
-                    logger.info("Sending schema complete message to consumer: " + consumer_id)
+                    self._print_with_prefix("Sending schema complete message to consumer " + consumer_id)
                     await self._consumer_registry.get_consumer(consumer_id).send(
                         text_data=json.dumps(
                             {
@@ -105,3 +106,6 @@ class SchemaInstance:
                 return True
 
             return False
+
+    def _print_with_prefix(self, msg: str):
+        logger.info("[" + self.schema_details.id + "] " + msg)
