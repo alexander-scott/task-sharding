@@ -22,7 +22,7 @@ class TaskDirectorController:
         self._schema_instances: list[SchemaInstance] = list()
         self._untriaged_consumer_registry = ConsumerRegistry()
 
-    async def handle_received(self, msg: dict, consumer_id: str):
+    def assign_consumer_to_instance(self, msg: dict, consumer_id: str):
         """
         Called when a registered websocket connection sends a JSON message to the server. The job
         of this method is to forward the message to a relevant schema instance, or create one if
@@ -38,10 +38,7 @@ class TaskDirectorController:
             schema_instance.register_consumer(consumer_id, consumer)
             print("Registering " + consumer_id + " in the existing instance: " + schema_instance.schema_details.id)
 
-        # Forward the message to that schema instance
-        await schema_instance.receive_message(msg, consumer_id)
-        if await schema_instance.check_if_schema_is_completed():
-            self._remove_schema_instance(schema_instance)
+        return schema_instance
 
     def _find_matching_schema_instance(self, msg: dict, consumer_id: str) -> SchemaInstance:
         with self._lock:
@@ -101,6 +98,8 @@ class TaskDirectorController:
         with self._lock:
             for instance in self._schema_instances:
                 instance.deregister_consumer(consumer_id)
+                if instance.get_total_registered_consumers() == 0:
+                    self._schema_instances.remove(instance)
 
     def get_total_untriaged_consumers(self) -> int:
         return self._untriaged_consumer_registry.get_total_registered_consumers()
