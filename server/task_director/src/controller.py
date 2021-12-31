@@ -58,7 +58,7 @@ class TaskDirectorController:
                     logger.info(
                         "Consumer "
                         + consumer_id
-                        + " would be a perfect fit in an existing instance: "
+                        + " would be a perfect fit in existing instance: "
                         + instance.schema_details.id
                     )
                     return instance

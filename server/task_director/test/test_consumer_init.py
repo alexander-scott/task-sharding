@@ -52,7 +52,7 @@ class TaskDirectorTests__TwoConsumersInit(TestCase):
         asyncio.get_event_loop().run_until_complete(self.consumer1.disconnect("200"))
         asyncio.get_event_loop().run_until_complete(self.consumer2.disconnect("200"))
 
-    def test__when_two_consumers_connected__expect_server_to_return_two_msgs(self):
+    def test__when_two_consumers_connected__and_configs_are_compatible__expect_single_schema_instance_created(self):
         """
         GIVEN a freshly instantiated TaskDirectorController.
         WHEN two consumers connect and send INIT messages with two steps.
