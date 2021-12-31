@@ -4,6 +4,10 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
 class ConsumerRegistry:
+    """
+    This class is a basic, thread-safe dictionary of consumers.
+    """
+
     def __init__(self):
         self._consumers: dict[str, AsyncJsonWebsocketConsumer] = {}
         self._lock = threading.Lock()
