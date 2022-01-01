@@ -28,7 +28,7 @@ class ConsumerRegistry:
                 del self._consumers[consumer_id]
             return consumer
 
-    def get_consumers(self) -> dict[str, AsyncJsonWebsocketConsumer]:
+    def get_consumers(self):
         with self._lock:
             return self._consumers
 
