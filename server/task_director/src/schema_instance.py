@@ -15,8 +15,7 @@ class SchemaInstance:
         self.schema_details = schema_details
 
         self._consumer_registry = ConsumerRegistry()
-        self._in_progress_steps = {}
-        self._schema_consumers = set()
+        self._in_progress_consumers = {}
         self._lock = threading.Lock()
         self._to_do_steps = list(range(0, self.schema_details.total_steps))
         self._dispatch = {
@@ -30,6 +29,10 @@ class SchemaInstance:
 
     def deregister_consumer(self, uuid: str):
         self._consumer_registry.remove_consumer(uuid)
+        if uuid in self._in_progress_consumers:
+            step_id = self._in_progress_consumers[uuid]
+            del self._in_progress_consumers[uuid]
+            self._to_do_steps.append(int(step_id))
 
     def is_consumer_registered(self, uuid: str) -> bool:
         return self._consumer_registry.check_if_consumer_exists(uuid)
@@ -43,11 +46,9 @@ class SchemaInstance:
 
     async def _send_build_instructions(self, msg: dict, consumer_id: str):
         with self._lock:
-            self._schema_consumers.add(consumer_id)
-
             if len(self._to_do_steps) > 0:
                 step = self._to_do_steps.pop()
-                self._in_progress_steps[step] = consumer_id
+                self._in_progress_consumers[consumer_id] = step
 
                 self._print_with_prefix("Assigning step ID " + str(step) + " to consumer " + consumer_id)
 
@@ -65,14 +66,14 @@ class SchemaInstance:
         with self._lock:
             step_id = msg["step_id"]
             step_success = msg["step_success"]
+            del self._in_progress_consumers[consumer_id]
             if step_success:
                 self._print_with_prefix("Consumer " + consumer_id + " completed step " + step_id)
-                del self._in_progress_steps[int(step_id)]
             else:
                 self._to_do_steps.append(int(step_id))
                 pass  # TODO: Do something on a step failure
             steps_not_started = len(self._to_do_steps)
-            steps_in_progress = len(self._in_progress_steps)
+            steps_in_progress = len(self._in_progress_consumers)
 
         if steps_not_started > 0 or steps_in_progress > 0:
             self._print_with_prefix(
@@ -89,13 +90,13 @@ class SchemaInstance:
     async def check_if_schema_is_completed(self):
         with self._lock:
             steps_not_started = len(self._to_do_steps)
-            steps_in_progress = len(self._in_progress_steps)
+            steps_in_progress = len(self._in_progress_consumers)
 
             if steps_not_started == 0 and steps_in_progress == 0:
                 self._print_with_prefix("Schema completed")
-                for consumer_id in self._schema_consumers:
+                for consumer_id, consumer in self._consumer_registry.get_consumers().items():
                     self._print_with_prefix("Sending schema complete message to consumer " + consumer_id)
-                    await self._consumer_registry.get_consumer(consumer_id).send(
+                    await consumer.send(
                         text_data=json.dumps(
                             {
                                 "message_type": MessageType.SCHEMA_COMPLETE,

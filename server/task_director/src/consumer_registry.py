@@ -28,6 +28,10 @@ class ConsumerRegistry:
                 del self._consumers[consumer_id]
             return consumer
 
+    def get_consumers(self) -> dict[str, AsyncJsonWebsocketConsumer]:
+        with self._lock:
+            return self._consumers
+
     def check_if_consumer_exists(self, consumer_id: str) -> bool:
         with self._lock:
             return consumer_id in self._consumers
