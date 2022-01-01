@@ -65,3 +65,7 @@ jobs:
         coverage run --source='.' -m unittest discover client
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v2
+      with:
+        files: .coverage
+        fail_ci_if_error: true
+        verbose: true
