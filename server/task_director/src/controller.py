@@ -73,11 +73,6 @@ class TaskDirectorController:
         self._schema_instances.append(schema_instance)
         return schema_instance
 
-    def _remove_schema_instance(self, schema_instance: SchemaInstance):
-        logger.info("Deleting schema instance with ID " + schema_instance.schema_details.id)
-        with self._lock:
-            self._schema_instances.remove(schema_instance)
-
     def register_consumer(self, consumer_id: str, consumer: AsyncJsonWebsocketConsumer):
         """
         Called when a new http request is upgraded to a websocket connection. As the consumer has
