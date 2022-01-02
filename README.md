@@ -1,5 +1,8 @@
 # Task Director
 
+[![codecov](https://codecov.io/gh/Alexander-Scott/task-director/branch/main/graph/badge.svg?token=FJFLCZFUKA)](https://codecov.io/gh/Alexander-Scott/task-director)
+[![CI](https://github.com/Alexander-Scott/task-director/actions/workflows/ci.yml/badge.svg)](https://github.com/Alexander-Scott/task-director/actions/workflows/ci.yml)
+
 ## Overview
 
 Task Director is essentially a P2P load balancer. It receives tasks from peers and then distributes tasks over all available peers. It uses a centralised system, meaning a server instance needs to be up and running and peers need to have knowledge of the server.
