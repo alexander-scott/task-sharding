@@ -38,7 +38,7 @@ class TaskDirectorController:
         # Triage (assign) the current consumer to this schema instance if untriaged
         if self._untriaged_consumer_registry.check_if_consumer_exists(consumer_id):
             consumer = self._untriaged_consumer_registry.get_consumer(consumer_id, True)
-            schema_instance.register_consumer(consumer_id, consumer)
+            schema_instance.register_consumer(consumer_id, consumer, msg["repo_state"])
 
         return schema_instance
 
@@ -46,14 +46,14 @@ class TaskDirectorController:
         with self._lock:
             # TODO: Add more logic to determine which consumers best match to a schema instance.
             # instance. E.g. branch, cache instance, and git commit baseline are all necessary.
-            # branch = msg["branch"]
             schema_id = msg["schema_id"]
             cache_id = msg["cache_id"]
+            repo_state = msg["repo_state"]
             for instance in self._schema_instances:
                 if (
                     instance.schema_details.schema_id == schema_id
                     and instance.schema_details.cache_id == cache_id
-                    # and instance.schema_details.branch == branch
+                    and instance.check_repo_state_is_aligned(repo_state)
                 ):
                     logger.info(
                         "Consumer "

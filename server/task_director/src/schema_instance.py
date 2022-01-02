@@ -17,28 +17,59 @@ class SchemaInstance:
         self._consumer_registry = ConsumerRegistry()
         self._in_progress_consumers = {}
         self._lock = threading.Lock()
+        self._repo_states = {}
         self._to_do_steps = list(range(0, self.schema_details.total_steps))
         self._dispatch = {
             MessageType.INIT: self._send_build_instructions,
             MessageType.STEP_COMPLETE: self._receive_step_completed,
         }
 
-    def register_consumer(self, uuid: str, consumer: AsyncJsonWebsocketConsumer):
-        self._print_with_prefix("Registering consumer " + uuid)
-        self._consumer_registry.add_consumer(uuid, consumer)
+    def register_consumer(self, consumer_id: str, consumer: AsyncJsonWebsocketConsumer, repo_state: dict):
+        self._print_with_prefix("Registering consumer " + consumer_id)
+        self._consumer_registry.add_consumer(consumer_id, consumer)
+        self._repo_states[consumer_id] = repo_state
 
-    def deregister_consumer(self, uuid: str):
-        self._consumer_registry.remove_consumer(uuid)
-        if uuid in self._in_progress_consumers:
-            step_id = self._in_progress_consumers[uuid]
-            del self._in_progress_consumers[uuid]
+    def deregister_consumer(self, consumer_id: str):
+        self._consumer_registry.remove_consumer(consumer_id)
+        if consumer_id in self._in_progress_consumers:
+            step_id = self._in_progress_consumers[consumer_id]
+            del self._in_progress_consumers[consumer_id]
             self._to_do_steps.append(int(step_id))
+        if consumer_id in self._repo_states:
+            del self._repo_states[consumer_id]
 
     def is_consumer_registered(self, uuid: str) -> bool:
         return self._consumer_registry.check_if_consumer_exists(uuid)
 
     def get_total_registered_consumers(self) -> int:
         return self._consumer_registry.get_total_registered_consumers()
+
+    def check_repo_state_is_aligned(self, repo_state: dict) -> bool:
+        # Loop over every repository sent by the client
+        for repo_name in repo_state:
+            client_repo = repo_state[repo_name]
+            client_branch = client_repo["base_ref"]
+            client_patchset = client_repo["patchset"]
+            client_additional_patchsets = client_repo.get("additional_patchsets", [])
+
+            # Loop over every consumer assigned to this schema instance
+            for consumer_id in self._repo_states:
+                if not repo_name in self._repo_states[consumer_id]:
+                    return False
+                consumer_repo = self._repo_states[consumer_id][repo_name]
+                consumer_branch = consumer_repo["base_ref"]
+                consumer_patchset = consumer_repo["patchset"]
+
+                # Branch name must be the same
+                if not (client_branch == consumer_branch):
+                    return False
+
+                # Patchset must be the same or this consumers patchset may be in the clients additional patchsets list
+                if not (client_patchset == consumer_patchset):
+                    if not (consumer_patchset in client_additional_patchsets):
+                        return False
+
+        return True
 
     async def receive_message(self, msg: dict, consumer_id: str):
         msg["message_type"] = MessageType(int(msg["message_type"]))
