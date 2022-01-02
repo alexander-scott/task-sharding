@@ -291,8 +291,10 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
             asyncio.get_event_loop().run_until_complete(consumer.receive(json.dumps(consumer_config)))
 
         total_instances_created = controller.get_total_running_schema_instances()
+        total_consumers_connected = controller.get_total_registered_consumers()
 
         self.assertEqual(expected_instance_count, total_instances_created)
+        self.assertEqual(len(consumer_configs), total_consumers_connected)
 
         for consumer in consumers:
             asyncio.get_event_loop().run_until_complete(consumer.disconnect("200"))
