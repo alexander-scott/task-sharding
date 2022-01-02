@@ -33,9 +33,11 @@ class MockConnection:
 
 
 class MockConfiguration:
-    def __init__(self, client_id, schema_path, workspace_path):
+    def __init__(self, client_id, cache_id, schema_path, repo_state_path, workspace_path):
         self.client_id = client_id
+        self.cache_id = cache_id
         self.schema_path = schema_path
+        self.repo_state_path = repo_state_path
         self.workspace_path = workspace_path
 
 
@@ -52,7 +54,7 @@ class TestClient(unittest.TestCase):
           - build
           - schema complete
         """
-        config = MockConfiguration("1", "./client/test/test_schema.yaml", "test")
+        config = MockConfiguration("1", "1", "./client/test/test_schema.yaml", "", "test")
         with MockConnection() as connection:
             client = Client(config, connection, self.logger)
             client_thread = threading.Thread(target=client.run)
@@ -90,7 +92,9 @@ class TestClient(unittest.TestCase):
             self.assertDictEqual(
                 {
                     "message_type": MessageType.INIT,
-                    "branch": "master",
+                    "repo_state": {
+                        "org/repo_1": {"base_ref": "main", "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"}
+                    },
                     "cache_id": "1",
                     "schema_id": "sleep",
                     "total_steps": 4,

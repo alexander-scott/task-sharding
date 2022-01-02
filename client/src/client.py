@@ -7,6 +7,7 @@ from websocket import WebSocketConnectionClosedException
 from src.connection import Connection
 from src.logger import Logger
 from src.message_type import MessageType
+from src.repo_state_parser import RepoStateParser
 from src.schema_loader import SchemaLoader
 from src.task.abstract_task import AbstractTask
 from src.task.task_factory import get_class_by_name
@@ -32,8 +33,8 @@ class Client:
         # Send a message to the server about our requirements.
         initial_message = {
             "message_type": MessageType.INIT,
-            "branch": "master",
-            "cache_id": "1",
+            "repo_state": RepoStateParser.parse_repo_state(self._config.repo_state_path),
+            "cache_id": self._config.cache_id,
             "schema_id": self._schema["name"],
             "total_steps": len(self._schema["steps"]),
         }
