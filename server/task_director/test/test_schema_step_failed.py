@@ -28,7 +28,12 @@ class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
         """
         client_init_msg = {
             "message_type": MessageType.INIT,
-            "branch": "master",
+            "repo_state": {
+                "org/repo_1": {
+                    "base_ref": "main",
+                    "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                }
+            },
             "cache_id": "1",
             "total_steps": 1,
             "schema_id": "1",
@@ -74,7 +79,12 @@ class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
 
         client_init_msg = {
             "message_type": MessageType.INIT,
-            "branch": "master",
+            "repo_state": {
+                "org/repo_1": {
+                    "base_ref": "main",
+                    "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                }
+            },
             "cache_id": "1",
             "total_steps": 1,
             "schema_id": "1",
@@ -111,7 +121,12 @@ class TaskDirectorTests__MultipleConsumerStepAbandoned(TestCase):
 
         client_init_msg = {
             "message_type": MessageType.INIT,
-            "branch": "master",
+            "repo_state": {
+                "org/repo_1": {
+                    "base_ref": "main",
+                    "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                }
+            },
             "cache_id": "1",
             "total_steps": 2,
             "schema_id": "1",

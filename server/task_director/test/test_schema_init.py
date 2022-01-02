@@ -19,7 +19,12 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                 [
                     {
                         "message_type": MessageType.INIT,
-                        "branch": "master",
+                        "repo_state": {
+                            "org/repo_1": {
+                                "base_ref": "main",
+                                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                            }
+                        },
                         "cache_id": "1",
                         "schema_id": "1",
                         "total_steps": 1,
@@ -32,14 +37,24 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                 [
                     {
                         "message_type": MessageType.INIT,
-                        "branch": "master",
+                        "repo_state": {
+                            "org/repo_1": {
+                                "base_ref": "main",
+                                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                            }
+                        },
                         "cache_id": "1",
                         "schema_id": "1",
                         "total_steps": 1,
                     },
                     {
                         "message_type": MessageType.INIT,
-                        "branch": "master",
+                        "repo_state": {
+                            "org/repo_1": {
+                                "base_ref": "main",
+                                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                            }
+                        },
                         "cache_id": "1",
                         "schema_id": "1",
                         "total_steps": 1,
@@ -47,39 +62,59 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                 ],
                 1,
             ],
-            [
-                "two_instances_connected_with_differing_branch_names",
-                [
-                    {
-                        "message_type": MessageType.INIT,
-                        "branch": "master",
-                        "cache_id": "1",
-                        "schema_id": "1",
-                        "total_steps": 1,
-                    },
-                    {
-                        "message_type": MessageType.INIT,
-                        "branch": "main",
-                        "cache_id": "1",
-                        "schema_id": "1",
-                        "total_steps": 1,
-                    },
-                ],
-                2,
-            ],
+            # [
+            #     "two_instances_connected_with_differing_branch_names",
+            #     [
+            #         {
+            #             "message_type": MessageType.INIT,
+            #             "repo_state": {
+            #                 "org/repo_1": {
+            #                     "base_ref": "main",
+            #                     "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+            #                 }
+            #             },
+            #             "cache_id": "1",
+            #             "schema_id": "1",
+            #             "total_steps": 1,
+            #         },
+            #         {
+            #             "message_type": MessageType.INIT,
+            #             "repo_state": {
+            #                 "org/repo_1": {
+            #                     "base_ref": "main",
+            #                     "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+            #                 }
+            #             },
+            #             "cache_id": "1",
+            #             "schema_id": "1",
+            #             "total_steps": 1,
+            #         },
+            #     ],
+            #     2,
+            # ],
             [
                 "two_instances_connected_with_differing_cache_id",
                 [
                     {
                         "message_type": MessageType.INIT,
-                        "branch": "master",
+                        "repo_state": {
+                            "org/repo_1": {
+                                "base_ref": "main",
+                                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                            }
+                        },
                         "cache_id": "1",
                         "schema_id": "1",
                         "total_steps": 1,
                     },
                     {
                         "message_type": MessageType.INIT,
-                        "branch": "master",
+                        "repo_state": {
+                            "org/repo_1": {
+                                "base_ref": "main",
+                                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                            }
+                        },
                         "cache_id": "2",
                         "schema_id": "1",
                         "total_steps": 1,
@@ -92,14 +127,24 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                 [
                     {
                         "message_type": MessageType.INIT,
-                        "branch": "master",
+                        "repo_state": {
+                            "org/repo_1": {
+                                "base_ref": "main",
+                                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                            }
+                        },
                         "cache_id": "1",
                         "schema_id": "1",
                         "total_steps": 1,
                     },
                     {
                         "message_type": MessageType.INIT,
-                        "branch": "master",
+                        "repo_state": {
+                            "org/repo_1": {
+                                "base_ref": "main",
+                                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                            }
+                        },
                         "cache_id": "1",
                         "schema_id": "2",
                         "total_steps": 1,
