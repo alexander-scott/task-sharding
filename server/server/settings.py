@@ -135,13 +135,12 @@ CHANNEL_LAYERS = {
         #     ],
         # },
         ### Method 2: Via local Redis => `docker run -p 6379:6379 -d redis:5`
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("172.17.0.1", 6379)],
-        },
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {
+        #     "hosts": [("172.17.0.1", 6379)],
+        # },
         ### Method 3: Via In-memory channel layer
-        ## Using this method. WARNING: Does not all for multiple channels
-        # "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
     },
 }
 
