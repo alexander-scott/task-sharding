@@ -8,11 +8,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install dependencies
-RUN apk update \
-    && apk add gcc python3-dev musl-dev libffi-dev
+# hadolint ignore=DL3018
+RUN apk add --no-cache gcc python3-dev musl-dev libffi-dev
 
 # install dependencies
-RUN pip install --upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
 COPY ./requirements.txt /usr/src/app
 RUN pip install --no-cache-dir -r requirements.txt
 
