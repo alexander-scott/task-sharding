@@ -12,6 +12,7 @@ ENV PYTHONUNBUFFERED 1
 RUN apk add --no-cache gcc python3-dev musl-dev libffi-dev
 
 # install dependencies
+# hadolint ignore=DL3013
 RUN pip install --no-cache-dir --upgrade pip
 COPY ./requirements.txt /usr/src/app
 RUN pip install --no-cache-dir -r requirements.txt
