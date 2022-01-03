@@ -11,7 +11,7 @@ $ python3 server/manage.py runserver
 This example can be run with the following command:
 
 ```bash
-$ python3 client/main.py --client_id=1 --schema_path=./examples/sleep/schema.yaml
+$ python3 client/main.py --client_id=1 --cache_id=1 --schema_path=./examples/sleep/schema.yaml --repo_state_path=.
 ```
 
 
