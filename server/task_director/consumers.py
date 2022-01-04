@@ -1,8 +1,13 @@
 import json
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncConsumer
 
 from task_director.src.controller import TaskDirectorController
 from task_director.src.schema_instance import SchemaInstance
+
+
+class TaskControllerConsumer(AsyncConsumer):
+    def test_print(self, message):
+        print("Test: " + message["text"])
 
 
 class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
