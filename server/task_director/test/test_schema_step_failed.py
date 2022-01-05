@@ -1,24 +1,40 @@
-import asyncio
+import copy
 import json
-from unittest.mock import call
+
+from channels.routing import URLRouter
+from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
+from channels.testing import ApplicationCommunicator, WebsocketCommunicator
+from channels.layers import get_channel_layer
 
 from django.test import TestCase
 
 from task_director.src.controller import TaskDirectorController
 from task_director.src.message_type import MessageType
 
-from task_director.test.utils import create_consumer
+from task_director.src.message_type import MessageType
+from task_director.routing import channel_name_patterns, websocket_urlpatterns
 
 
 class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
-    def setUp(self):
-        self.consumer = create_consumer("UUID1")
-        asyncio.get_event_loop().run_until_complete(self.consumer.connect())
+    async def setUpAsync(self):
+        application = ProtocolTypeRouter(
+            {
+                "channel": ChannelNameRouter(channel_name_patterns),
+                "websocket": URLRouter(websocket_urlpatterns),
+            }
+        )
+        self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
+        self.consumer = WebsocketCommunicator(application, "/ws/api/1/1/")
+        connected, subprotocol = await self.consumer.connect()
 
-    def tearDown(self):
-        asyncio.get_event_loop().run_until_complete(self.consumer.disconnect("200"))
+    async def tearDownAsync(self):
+        await self.consumer.disconnect()
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
 
-    def test__when_one_consumer_connected__and_single_schema_step_is_failed__expect_build_instruction_resent(self):
+    async def test__when_one_consumer_connected__and_single_schema_step_is_failed__expect_build_instruction_resent(
+        self,
+    ):
         """
         GIVEN a freshly instantiated TaskDirectorController.
         WHEN a consumer connects and sends an INIT message with a single step,
@@ -26,6 +42,9 @@ class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
           AND the consumer subsequently sends a failed step message.
         EXPECT the server to send the same build instruction message to the consumer.
         """
+
+        await self.setUpAsync()
+
         client_init_msg = {
             "message_type": MessageType.INIT,
             "repo_state": {
@@ -39,7 +58,19 @@ class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
             "schema_id": "1",
         }
 
-        asyncio.get_event_loop().run_until_complete(self.consumer.receive(json.dumps(client_init_msg)))
+        # Send client init message to controller
+        await self.consumer.send_to(text_data=json.dumps(client_init_msg))
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
+
+        expected_build_instruction_msg = {
+            "type": "send.message",
+            "message_type": MessageType.BUILD_INSTRUCTION,
+            "schema_id": "1",
+            "step_id": "0",
+        }
+        actual_build_instruction_msg = await self.consumer.receive_from()
+        self.assertDictEqual(expected_build_instruction_msg, json.loads(actual_build_instruction_msg))
 
         client_step_complete_msg = {
             "message_type": MessageType.STEP_COMPLETE,
@@ -48,22 +79,34 @@ class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
             "step_success": False,
         }
 
-        asyncio.get_event_loop().run_until_complete(self.consumer.receive(json.dumps(client_step_complete_msg)))
-        expected_build_instruction_msg = {
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "0",
-        }
-        self.consumer.send.assert_has_calls(
-            [
-                call(text_data=json.dumps(expected_build_instruction_msg)),
-                call(text_data=json.dumps(expected_build_instruction_msg)),
-            ]
-        )
+        await self.consumer.send_to(text_data=json.dumps(client_step_complete_msg))
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
+
+        actual_build_instruction_msg = await self.consumer.receive_from()
+        self.assertDictEqual(expected_build_instruction_msg, json.loads(actual_build_instruction_msg))
+
+        await self.tearDownAsync()
 
 
 class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
-    def test__when_one_consumer_connected__and_single_schema_step_is_abandoned__expect_schema_is_abandoned(self):
+    async def setUpAsync(self):
+        application = ProtocolTypeRouter(
+            {
+                "channel": ChannelNameRouter(channel_name_patterns),
+                "websocket": URLRouter(websocket_urlpatterns),
+            }
+        )
+        self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
+        self.consumer = WebsocketCommunicator(application, "/ws/api/1/1/")
+        connected, subprotocol = await self.consumer.connect()
+
+    async def tearDownAsync(self):
+        await self.consumer.disconnect()
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
+
+    async def test__when_one_consumer_connected__and_single_schema_step_is_abandoned__expect_schema_is_abandoned(self):
         """
         GIVEN a freshly instantiated TaskDirectorController.
         WHEN a consumer connects and sends an INIT message with a single step,
@@ -72,10 +115,7 @@ class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
         EXPECT the server to abandon the schema.
         """
 
-        controller = TaskDirectorController()
-        consumer = create_consumer("1")
-        consumer._controller = controller
-        asyncio.get_event_loop().run_until_complete(consumer.connect())
+        await self.setUpAsync()
 
         client_init_msg = {
             "message_type": MessageType.INIT,
@@ -90,17 +130,49 @@ class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
             "schema_id": "1",
         }
 
-        asyncio.get_event_loop().run_until_complete(consumer.receive(json.dumps(client_init_msg)))
+        # Send client init message to controller
+        await self.consumer.send_to(text_data=json.dumps(client_init_msg))
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
 
-        self.assertEqual(1, controller.get_total_running_schema_instances())
+        await self.controller.send_input(
+            {
+                "type": "get.total.running.schema.instances.msg",
+                "channel_name": "testing",
+            }
+        )
+        running_instances_msg = await get_channel_layer().receive("testing")
 
-        asyncio.get_event_loop().run_until_complete(consumer.disconnect("500"))
+        self.assertEqual(1, running_instances_msg["total_running_schema_instances"])
 
-        self.assertEqual(0, controller.get_total_running_schema_instances())
+        await self.tearDownAsync()
+
+        await self.controller.send_input(
+            {
+                "type": "get.total.running.schema.instances.msg",
+                "channel_name": "testing",
+            }
+        )
+        running_instances_msg = await get_channel_layer().receive("testing")
+
+        self.assertEqual(0, running_instances_msg["total_running_schema_instances"])
 
 
 class TaskDirectorTests__MultipleConsumerStepAbandoned(TestCase):
-    def test__when_two_consumers_connected__and_schema_step_is_abandoned__expect_abandoned_schema_step_to_be_assigned_to_other_consumer(
+    async def setUpAsync(self):
+        application = ProtocolTypeRouter(
+            {
+                "channel": ChannelNameRouter(channel_name_patterns),
+                "websocket": URLRouter(websocket_urlpatterns),
+            }
+        )
+        self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
+        self.consumer1 = WebsocketCommunicator(application, "/ws/api/1/1/")
+        connected, subprotocol = await self.consumer1.connect()
+        self.consumer2 = WebsocketCommunicator(application, "/ws/api/1/1/")
+        connected, subprotocol = await self.consumer2.connect()
+
+    async def test__when_two_consumers_connected__and_schema_step_is_abandoned__expect_abandoned_schema_step_to_be_assigned_to_other_consumer(
         self,
     ):
         """
@@ -111,13 +183,7 @@ class TaskDirectorTests__MultipleConsumerStepAbandoned(TestCase):
         EXPECT the abandoned step to be assigned to the remaining consumer.
         """
 
-        controller = TaskDirectorController()
-        consumer1 = create_consumer("1")
-        consumer1._controller = controller
-        asyncio.get_event_loop().run_until_complete(consumer1.connect())
-        consumer2 = create_consumer("2")
-        consumer2._controller = controller
-        asyncio.get_event_loop().run_until_complete(consumer2.connect())
+        await self.setUpAsync()
 
         client_init_msg = {
             "message_type": MessageType.INIT,
@@ -132,41 +198,52 @@ class TaskDirectorTests__MultipleConsumerStepAbandoned(TestCase):
             "schema_id": "1",
         }
 
-        asyncio.get_event_loop().run_until_complete(consumer1.receive(json.dumps(client_init_msg)))
-        asyncio.get_event_loop().run_until_complete(consumer2.receive(json.dumps(client_init_msg)))
+        # Send client init message to controller
+        await self.consumer1.send_to(text_data=json.dumps(client_init_msg))
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
 
-        self.assertEqual(1, controller.get_total_running_schema_instances())
+        expected_build_instruction_msg_step_1 = {
+            "type": "send.message",
+            "message_type": MessageType.BUILD_INSTRUCTION,
+            "schema_id": "1",
+            "step_id": "1",
+        }
+        actual_build_instruction_msg = await self.consumer1.receive_from()
+        self.assertDictEqual(expected_build_instruction_msg_step_1, json.loads(actual_build_instruction_msg))
 
-        asyncio.get_event_loop().run_until_complete(consumer1.disconnect("500"))
+        # Send client init message to controller
+        await self.consumer2.send_to(text_data=json.dumps(client_init_msg))
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
 
-        consumer_2_step_complete_msg = {
+        expected_build_instruction_msg_step_0 = {
+            "type": "send.message",
+            "message_type": MessageType.BUILD_INSTRUCTION,
+            "schema_id": "1",
+            "step_id": "0",
+        }
+        actual_build_instruction_msg = await self.consumer2.receive_from()
+        self.assertDictEqual(expected_build_instruction_msg_step_0, json.loads(actual_build_instruction_msg))
+
+        await self.consumer1.disconnect()
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
+
+        step_2_step_complete_msg = {
             "message_type": MessageType.STEP_COMPLETE,
             "schema_id": "1",
             "step_id": "0",
             "step_success": True,
         }
 
-        asyncio.get_event_loop().run_until_complete(consumer2.receive(json.dumps(consumer_2_step_complete_msg)))
+        await self.consumer2.send_to(text_data=json.dumps(step_2_step_complete_msg))
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))
 
-        expected_consumer_2_build_instruction_msg_1 = {
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "0",
-        }
-        expected_consumer_2_build_instruction_msg_2 = {
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "1",
-        }
+        actual_build_instruction_msg = await self.consumer2.receive_from()
+        self.assertDictEqual(expected_build_instruction_msg_step_1, json.loads(actual_build_instruction_msg))
 
-        consumer1.send.assert_has_calls(
-            [
-                call(text_data=json.dumps(expected_consumer_2_build_instruction_msg_2)),
-            ]
-        )
-        consumer2.send.assert_has_calls(
-            [
-                call(text_data=json.dumps(expected_consumer_2_build_instruction_msg_1)),
-                call(text_data=json.dumps(expected_consumer_2_build_instruction_msg_2)),
-            ]
-        )
+        await self.consumer2.disconnect()
+        controller_msg = await get_channel_layer().receive("controller")
+        await self.controller.send_input(copy.deepcopy(controller_msg))

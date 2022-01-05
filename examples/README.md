@@ -20,5 +20,5 @@ $ python3 client/main.py --client_id=1 --cache_id=1 --schema_path=./examples/sle
 This example can be run with the following command:
 
 ```bash
-$ python3 client/main.py --client_id=1 --schema_path=./examples/bazel/schema.yaml --workspace_path=./examples/bazel
+$ python3 client/main.py --client_id=1 --cache_id=1 --schema_path=./examples/bazel/schema.yaml --repo_state_path=. --workspace_path=./examples/bazel
 ```

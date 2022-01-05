@@ -1,13 +1,8 @@
 import queue
 
+from task_director.src.controller import TaskDirectorController
 
-class MockConsumer:
-    def __init__(self, id):
-        self.id = id
-        self.sent_messages = queue.Queue()
 
-    async def send(self, text_data: str):
-        self.sent_messages.put(text_data)
-
-    def get_sent_data(self, block=True, timeout=1):
-        return self.sent_messages.get(block=block, timeout=timeout)
+class MockController(TaskDirectorController):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
