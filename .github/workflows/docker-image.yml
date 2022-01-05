@@ -1,8 +1,6 @@
 name: Docker Image CI
 
-on:
-  push:
-    branches: [ main ]
+on: [push]
 
 jobs:
   lint:
@@ -17,6 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the server Docker image
-      run: docker build ./server --file Dockerfile --target server --tag task-director-server:$(date +%s)
+      run: docker build --file server/Dockerfile --target server --tag task-director-server:$(date +%s) .
     - name: Build the controller Docker image
-      run: docker build ./server --file Dockerfile --target controller --tag task-director-controller:$(date +%s)
+      run: docker build --file server/Dockerfile --target controller --tag task-director-controller:$(date +%s) .
