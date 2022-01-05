@@ -1,14 +1,19 @@
-import copy
 import json
 
-from channels.routing import URLRouter
-from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
-from channels.layers import get_channel_layer
 from django.test import TestCase
 
-from task_director.src.message_type import MessageType
-from task_director.routing import channel_name_patterns, websocket_urlpatterns
+from task_director.test.defaults import (
+    create_application,
+    create_default_client_init_message,
+    create_default_step_complete_message,
+    create_default_schema_complete_message,
+)
+from task_director.test.utils import (
+    proxy_message_from_channel_to_communicator,
+    prompt_response_from_communicator,
+    send_message_between_communicators,
+)
 
 
 class TaskDirectorTests__SchemaCompleted(TestCase):
@@ -22,116 +27,70 @@ class TaskDirectorTests__SchemaCompleted(TestCase):
         EXPECT two schema instances to be successfully completed.
         """
 
-        application = ProtocolTypeRouter(
-            {
-                "channel": ChannelNameRouter(channel_name_patterns),
-                "websocket": URLRouter(websocket_urlpatterns),
-            }
-        )
+        application = create_application()
         controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         consumer_1 = WebsocketCommunicator(application, "/ws/api/1/1/")
         await consumer_1.connect()
 
-        client_init_msg = {
-            "message_type": MessageType.INIT,
-            "repo_state": {
-                "org/repo_1": {
-                    "base_ref": "main",
-                    "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                }
-            },
-            "cache_id": "1",
-            "total_steps": 1,
-            "schema_id": "1",
-        }
-        client_step_complete_msg = {
-            "message_type": MessageType.STEP_COMPLETE,
-            "schema_id": "1",
-            "step_id": "0",
-            "step_success": True,
-        }
-        expected_schema_complete_msg = {
-            "type": "send.message",
-            "message_type": MessageType.SCHEMA_COMPLETE,
-            "schema_id": "1",
-        }
+        client_init_msg = create_default_client_init_message()
+        client_step_complete_msg = create_default_step_complete_message()
+        expected_schema_complete_msg = create_default_schema_complete_message()
 
         # Send client init message to controller
-        await consumer_1.send_to(text_data=json.dumps(client_init_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await controller.send_input(copy.deepcopy(controller_msg))
+        await send_message_between_communicators(consumer_1, controller, client_init_msg)
 
         # Build instructions msg
         await consumer_1.receive_from()
 
-        await controller.send_input(
-            {
-                "type": "get.total.running.schema.instances.msg",
-                "channel_name": "testing",
-            }
+        # Assert one schema instance is running
+        total_running_schema_instances = await prompt_response_from_communicator(
+            controller, "get.total.running.schema.instances.msg", "total_running_schema_instances"
         )
-        running_instances_msg = await get_channel_layer().receive("testing")
+        self.assertEqual(1, total_running_schema_instances)
 
-        self.assertEqual(1, running_instances_msg["total_running_schema_instances"])
+        # Send client step complete message to controller
+        await send_message_between_communicators(consumer_1, controller, client_step_complete_msg)
 
-        await consumer_1.send_to(text_data=json.dumps(client_step_complete_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await controller.send_input(copy.deepcopy(controller_msg))
-
+        # Assert the controller sent the correct schema complete message to the consumer
         actual_schema_complete_msg = await consumer_1.receive_from()
         self.assertDictEqual(expected_schema_complete_msg, json.loads(actual_schema_complete_msg))
 
         await consumer_1.disconnect()
-        controller_msg = await get_channel_layer().receive("controller")
-        await controller.send_input(copy.deepcopy(controller_msg))
+        await proxy_message_from_channel_to_communicator("controller", controller)
 
-        await controller.send_input(
-            {
-                "type": "get.total.running.schema.instances.msg",
-                "channel_name": "testing",
-            }
+        # Assert no schema instances are running
+        total_running_schema_instances = await prompt_response_from_communicator(
+            controller, "get.total.running.schema.instances.msg", "total_running_schema_instances"
         )
-        running_instances_msg = await get_channel_layer().receive("testing")
-
-        self.assertEqual(0, running_instances_msg["total_running_schema_instances"])
+        self.assertEqual(0, total_running_schema_instances)
 
         consumer_2 = WebsocketCommunicator(application, "/ws/api/1/1/")
         await consumer_2.connect()
 
-        await consumer_2.send_to(text_data=json.dumps(client_init_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await controller.send_input(copy.deepcopy(controller_msg))
+        # Send client init message to controller
+        await send_message_between_communicators(consumer_2, controller, client_init_msg)
 
         # Build instructions msg
         await consumer_2.receive_from()
 
-        await controller.send_input(
-            {
-                "type": "get.total.running.schema.instances.msg",
-                "channel_name": "testing",
-            }
+        # Assert one schema instance is running
+        total_running_schema_instances = await prompt_response_from_communicator(
+            controller, "get.total.running.schema.instances.msg", "total_running_schema_instances"
         )
-        running_instances_msg = await get_channel_layer().receive("testing")
+        self.assertEqual(1, total_running_schema_instances)
 
-        self.assertEqual(1, running_instances_msg["total_running_schema_instances"])
+        # Send client step complete message to controller
+        await send_message_between_communicators(consumer_2, controller, client_step_complete_msg)
 
-        await consumer_2.send_to(text_data=json.dumps(client_step_complete_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await controller.send_input(copy.deepcopy(controller_msg))
-
+        # Assert the controller sent the correct schema complete message to the consumer
         actual_schema_complete_msg = await consumer_2.receive_from()
         self.assertDictEqual(expected_schema_complete_msg, json.loads(actual_schema_complete_msg))
 
         await consumer_2.disconnect()
-        controller_msg = await get_channel_layer().receive("controller")
-        await controller.send_input(copy.deepcopy(controller_msg))
+        await proxy_message_from_channel_to_communicator("controller", controller)
 
-        await controller.send_input(
-            {
-                "type": "get.total.running.schema.instances.msg",
-                "channel_name": "testing",
-            }
+        # Assert no schema instances are running
+        total_running_schema_instances = await prompt_response_from_communicator(
+            controller, "get.total.running.schema.instances.msg", "total_running_schema_instances"
         )
-        running_instances_msg = await get_channel_layer().receive("testing")
-
-        self.assertEqual(0, running_instances_msg["total_running_schema_instances"])
+        self.assertEqual(0, total_running_schema_instances)

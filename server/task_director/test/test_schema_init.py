@@ -1,13 +1,12 @@
-import copy
 import json
 
-from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
-from channels.layers import get_channel_layer
 from django.test import TestCase
 
 from task_director.src.message_type import MessageType
-from task_director.routing import channel_name_patterns, websocket_urlpatterns
+
+from task_director.test.defaults import create_application
+from task_director.test.utils import proxy_message_from_channel_to_communicator, prompt_response_from_communicator
 
 
 param_list = [
@@ -282,12 +281,7 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
     async def test__schema_instance_count(self):
         for name, consumer_configs, expected_instance_count in param_list:
             with self.subTest(name):
-                application = ProtocolTypeRouter(
-                    {
-                        "channel": ChannelNameRouter(channel_name_patterns),
-                        "websocket": URLRouter(websocket_urlpatterns),
-                    }
-                )
+                application = create_application()
                 controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
 
                 consumers = []
@@ -300,40 +294,21 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                     # Mock client send to consumer via the websocket communicator
                     await consumer.send_to(text_data=json.dumps(consumer_config))
 
-                    # Wait for consumer to send to controller channel
-                    controller_msg = await get_channel_layer().receive("controller")
-                    # Forward message from channel to controller via the application communicator
-                    await controller.send_input(copy.deepcopy(controller_msg))
+                    # Proxy the message sent from consumer to the controller
+                    await proxy_message_from_channel_to_communicator("controller", controller)
 
-                total_registered_consumers = await self.get_total_registered_consumers(controller)
-                total_running_schema_instances = await self.get_total_running_schema_instances(controller)
+                total_registered_consumers = await prompt_response_from_communicator(
+                    controller, "get.total.registered.consumers.msg", "total_registered_consumers"
+                )
+                total_running_schema_instances = await prompt_response_from_communicator(
+                    controller, "get.total.running.schema.instances.msg", "total_running_schema_instances"
+                )
 
                 self.assertEqual(expected_instance_count, total_running_schema_instances)
                 self.assertEqual(len(consumer_configs), total_registered_consumers)
 
                 for consumer in consumers:
                     await consumer.disconnect()
-                    controller_msg = await get_channel_layer().receive("controller")
-                    await controller.send_input(copy.deepcopy(controller_msg))
+                    await proxy_message_from_channel_to_communicator("controller", controller)
 
                 controller.stop()
-
-    async def get_total_registered_consumers(self, controller):
-        await controller.send_input(
-            {
-                "type": "get.total.registered.consumers.msg",
-                "channel_name": "testing",
-            }
-        )
-        registered_consumers_msg = await get_channel_layer().receive("testing")
-        return registered_consumers_msg["total_registered_consumers"]
-
-    async def get_total_running_schema_instances(self, controller):
-        await controller.send_input(
-            {
-                "type": "get.total.running.schema.instances.msg",
-                "channel_name": "testing",
-            }
-        )
-        instances_created_msg = await get_channel_layer().receive("testing")
-        return instances_created_msg["total_running_schema_instances"]

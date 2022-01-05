@@ -1,35 +1,31 @@
-import copy
 import json
 
-from channels.routing import URLRouter
-from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
-from channels.layers import get_channel_layer
-
 from django.test import TestCase
 
-from task_director.src.message_type import MessageType
-
-from task_director.src.message_type import MessageType
-from task_director.routing import channel_name_patterns, websocket_urlpatterns
+from task_director.test.defaults import (
+    create_application,
+    create_default_client_init_message,
+    create_default_build_instruction_message,
+    create_default_step_complete_message,
+    create_default_schema_complete_message,
+)
+from task_director.test.utils import (
+    proxy_message_from_channel_to_communicator,
+    send_message_between_communicators,
+)
 
 
 class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
     async def setUpAsync(self):
-        application = ProtocolTypeRouter(
-            {
-                "channel": ChannelNameRouter(channel_name_patterns),
-                "websocket": URLRouter(websocket_urlpatterns),
-            }
-        )
+        application = create_application()
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         self.consumer = WebsocketCommunicator(application, "/ws/api/1/1/")
         await self.consumer.connect()
 
     async def tearDownAsync(self):
         await self.consumer.disconnect()
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        await proxy_message_from_channel_to_communicator("controller", self.controller)
 
     async def test__when_one_consumer_connected__and_single_schema_step_is_successful__expect_schema_complete_msg_sent(
         self,
@@ -44,49 +40,21 @@ class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
 
         await self.setUpAsync()
 
-        client_init_msg = {
-            "message_type": MessageType.INIT,
-            "repo_state": {
-                "org/repo_1": {
-                    "base_ref": "main",
-                    "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                }
-            },
-            "cache_id": "1",
-            "total_steps": 1,
-            "schema_id": "1",
-        }
         # Send client init message to controller
-        await self.consumer.send_to(text_data=json.dumps(client_init_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        client_init_msg = create_default_client_init_message()
+        await send_message_between_communicators(self.consumer, self.controller, client_init_msg)
 
-        expected_build_instruction_msg = {
-            "type": "send.message",
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "0",
-        }
+        # Assert the controller sent the correct build instruction to the consumer
+        expected_build_instruction_msg = create_default_build_instruction_message()
         actual_build_instruction_msg = await self.consumer.receive_from()
         self.assertDictEqual(expected_build_instruction_msg, json.loads(actual_build_instruction_msg))
 
-        client_step_complete_msg = {
-            "message_type": MessageType.STEP_COMPLETE,
-            "schema_id": "1",
-            "step_id": "0",
-            "step_success": True,
-        }
-
         # Send step complete message to controller
-        await self.consumer.send_to(text_data=json.dumps(client_step_complete_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        client_step_complete_msg = create_default_step_complete_message()
+        await send_message_between_communicators(self.consumer, self.controller, client_step_complete_msg)
 
-        expected_schema_complete_msg = {
-            "type": "send.message",
-            "message_type": MessageType.SCHEMA_COMPLETE,
-            "schema_id": "1",
-        }
+        # Assert the controller sent the correct schema complete message to the consumer
+        expected_schema_complete_msg = create_default_schema_complete_message()
         actual_schema_complete_msg = await self.consumer.receive_from()
         self.assertDictEqual(expected_schema_complete_msg, json.loads(actual_schema_complete_msg))
 
@@ -104,68 +72,30 @@ class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
 
         await self.setUpAsync()
 
-        client_init_msg = {
-            "message_type": MessageType.INIT,
-            "repo_state": {
-                "org/repo_1": {
-                    "base_ref": "main",
-                    "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                }
-            },
-            "cache_id": "1",
-            "total_steps": 2,
-            "schema_id": "1",
-        }
         # Send client init message to controller
-        await self.consumer.send_to(text_data=json.dumps(client_init_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        client_init_msg = create_default_client_init_message(2)
+        await send_message_between_communicators(self.consumer, self.controller, client_init_msg)
 
-        expected_build_instruction_1_msg = {
-            "type": "send.message",
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "1",
-        }
+        # Assert the controller sent the correct build instruction to the consumer
+        expected_build_instruction_1_msg = create_default_build_instruction_message("1")
         actual_build_instruction_msg = await self.consumer.receive_from()
         self.assertDictEqual(expected_build_instruction_1_msg, json.loads(actual_build_instruction_msg))
 
-        client_step_1_complete_msg = {
-            "message_type": MessageType.STEP_COMPLETE,
-            "schema_id": "1",
-            "step_id": "1",
-            "step_success": True,
-        }
-        # Send client init message to controller
-        await self.consumer.send_to(text_data=json.dumps(client_step_1_complete_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        # Send client step complete message to controller
+        client_step_1_complete_msg = create_default_step_complete_message("1")
+        await send_message_between_communicators(self.consumer, self.controller, client_step_1_complete_msg)
 
-        expected_build_instruction_2_msg = {
-            "type": "send.message",
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "0",
-        }
+        # Assert the controller sent the correct build instruction to the consumer
+        expected_build_instruction_2_msg = create_default_build_instruction_message("0")
         actual_build_instruction_msg = await self.consumer.receive_from()
         self.assertDictEqual(expected_build_instruction_2_msg, json.loads(actual_build_instruction_msg))
 
-        client_step_2_complete_msg = {
-            "message_type": MessageType.STEP_COMPLETE,
-            "schema_id": "1",
-            "step_id": "0",
-            "step_success": True,
-        }
-        # Send client init message to controller
-        await self.consumer.send_to(text_data=json.dumps(client_step_2_complete_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        # Send client step complete message to controller
+        client_step_2_complete_msg = create_default_step_complete_message("0")
+        await send_message_between_communicators(self.consumer, self.controller, client_step_2_complete_msg)
 
-        expected_schema_complete_msg = {
-            "type": "send.message",
-            "message_type": MessageType.SCHEMA_COMPLETE,
-            "schema_id": "1",
-        }
+        # Assert the controller sent the correct schema complete message to the consumer
+        expected_schema_complete_msg = create_default_schema_complete_message()
         actual_schema_complete_msg = await self.consumer.receive_from()
         self.assertDictEqual(expected_schema_complete_msg, json.loads(actual_schema_complete_msg))
 
@@ -174,12 +104,7 @@ class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
 
 class TaskDirectorTests__TwoConsumersStepComplete(TestCase):
     async def setUpAsync(self):
-        application = ProtocolTypeRouter(
-            {
-                "channel": ChannelNameRouter(channel_name_patterns),
-                "websocket": URLRouter(websocket_urlpatterns),
-            }
-        )
+        application = create_application()
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         self.consumer1 = WebsocketCommunicator(application, "/ws/api/1/1/")
         await self.consumer1.connect()
@@ -188,11 +113,9 @@ class TaskDirectorTests__TwoConsumersStepComplete(TestCase):
 
     async def tearDownAsync(self):
         await self.consumer1.disconnect()
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        await proxy_message_from_channel_to_communicator("controller", self.controller)
         await self.consumer2.disconnect()
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        await proxy_message_from_channel_to_communicator("controller", self.controller)
 
     async def test__when_two_consumers_connected__and_both_schema_steps_are_successful__expect_schema_complete_msg_sent(
         self,
@@ -207,71 +130,33 @@ class TaskDirectorTests__TwoConsumersStepComplete(TestCase):
 
         await self.setUpAsync()
 
-        client_init_msg = {
-            "message_type": MessageType.INIT,
-            "repo_state": {
-                "org/repo_1": {
-                    "base_ref": "main",
-                    "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                }
-            },
-            "cache_id": "1",
-            "total_steps": 2,
-            "schema_id": "1",
-        }
         # Send client init message to controller
-        await self.consumer1.send_to(text_data=json.dumps(client_init_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        client_init_msg = create_default_client_init_message(2)
+        await send_message_between_communicators(self.consumer1, self.controller, client_init_msg)
 
-        expected_client_1_build_instruction_msg = {
-            "type": "send.message",
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "1",
-        }
+        # Assert the controller sent the correct build instruction to the consumer
+        expected_client_1_build_instruction_msg = create_default_build_instruction_message("1")
         actual_build_instruction_msg = await self.consumer1.receive_from()
         self.assertDictEqual(expected_client_1_build_instruction_msg, json.loads(actual_build_instruction_msg))
 
         # Send client init message to controller
-        await self.consumer2.send_to(text_data=json.dumps(client_init_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        await send_message_between_communicators(self.consumer2, self.controller, client_init_msg)
 
-        expected_client_2_build_instruction_msg = {
-            "type": "send.message",
-            "message_type": MessageType.BUILD_INSTRUCTION,
-            "schema_id": "1",
-            "step_id": "0",
-        }
+        # Assert the controller sent the correct build instruction to the consumer
+        expected_client_2_build_instruction_msg = create_default_build_instruction_message("0")
         actual_build_instruction_msg = await self.consumer2.receive_from()
         self.assertDictEqual(expected_client_2_build_instruction_msg, json.loads(actual_build_instruction_msg))
 
-        client_1_step_complete_msg = {
-            "message_type": MessageType.STEP_COMPLETE,
-            "schema_id": "1",
-            "step_id": "0",
-            "step_success": True,
-        }
-        await self.consumer1.send_to(text_data=json.dumps(client_1_step_complete_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        # Send client step complete message to controller
+        client_1_step_complete_msg = create_default_step_complete_message("0")
+        await send_message_between_communicators(self.consumer1, self.controller, client_1_step_complete_msg)
 
-        client_2_step_complete_msg = {
-            "message_type": MessageType.STEP_COMPLETE,
-            "schema_id": "1",
-            "step_id": "1",
-            "step_success": True,
-        }
-        await self.consumer2.send_to(text_data=json.dumps(client_2_step_complete_msg))
-        controller_msg = await get_channel_layer().receive("controller")
-        await self.controller.send_input(copy.deepcopy(controller_msg))
+        # Send client step complete message to controller
+        client_2_step_complete_msg = create_default_step_complete_message("1")
+        await send_message_between_communicators(self.consumer2, self.controller, client_2_step_complete_msg)
 
-        expected_schema_complete_msg = {
-            "type": "send.message",
-            "message_type": MessageType.SCHEMA_COMPLETE,
-            "schema_id": "1",
-        }
+        # Assert the controller sent the correct schema complete message to the consumer
+        expected_schema_complete_msg = create_default_schema_complete_message()
         actual_schema_complete_msg = await self.consumer1.receive_from()
         self.assertDictEqual(expected_schema_complete_msg, json.loads(actual_schema_complete_msg))
         actual_schema_complete_msg = await self.consumer2.receive_from()
