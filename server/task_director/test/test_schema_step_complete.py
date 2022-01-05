@@ -24,7 +24,7 @@ class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
         )
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         self.consumer = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await self.consumer.connect()
+        await self.consumer.connect()
 
     async def tearDownAsync(self):
         await self.consumer.disconnect()
@@ -182,9 +182,9 @@ class TaskDirectorTests__TwoConsumersStepComplete(TestCase):
         )
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         self.consumer1 = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await self.consumer1.connect()
+        await self.consumer1.connect()
         self.consumer2 = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await self.consumer2.connect()
+        await self.consumer2.connect()
 
     async def tearDownAsync(self):
         await self.consumer1.disconnect()

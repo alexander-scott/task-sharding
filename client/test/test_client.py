@@ -1,11 +1,11 @@
-from src.client import Client
-from src.logger import Logger
-from src.message_type import MessageType
-
 import json
 import queue
 import threading
 import unittest
+
+from src.client import Client
+from src.logger import Logger
+from src.message_type import MessageType
 
 
 class MockConnection:

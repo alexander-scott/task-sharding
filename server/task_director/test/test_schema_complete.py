@@ -30,7 +30,7 @@ class TaskDirectorTests__SchemaCompleted(TestCase):
         )
         controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         consumer_1 = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await consumer_1.connect()
+        await consumer_1.connect()
 
         client_init_msg = {
             "message_type": MessageType.INIT,
@@ -96,7 +96,7 @@ class TaskDirectorTests__SchemaCompleted(TestCase):
         self.assertEqual(0, running_instances_msg["total_running_schema_instances"])
 
         consumer_2 = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await consumer_2.connect()
+        await consumer_2.connect()
 
         await consumer_2.send_to(text_data=json.dumps(client_init_msg))
         controller_msg = await get_channel_layer().receive("controller")

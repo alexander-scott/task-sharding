@@ -1,15 +1,11 @@
 import copy
 import json
 
-from channels.routing import URLRouter
 from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
 from channels.layers import get_channel_layer
 
 from django.test import TestCase
-
-from task_director.src.controller import TaskDirectorController
-from task_director.src.message_type import MessageType
 
 from task_director.src.message_type import MessageType
 from task_director.routing import channel_name_patterns, websocket_urlpatterns
@@ -25,7 +21,7 @@ class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
         )
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         self.consumer = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await self.consumer.connect()
+        await self.consumer.connect()
 
     async def tearDownAsync(self):
         await self.consumer.disconnect()
@@ -99,7 +95,7 @@ class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
         )
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         self.consumer = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await self.consumer.connect()
+        await self.consumer.connect()
 
     async def tearDownAsync(self):
         await self.consumer.disconnect()
@@ -168,9 +164,9 @@ class TaskDirectorTests__MultipleConsumerStepAbandoned(TestCase):
         )
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
         self.consumer1 = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await self.consumer1.connect()
+        await self.consumer1.connect()
         self.consumer2 = WebsocketCommunicator(application, "/ws/api/1/1/")
-        connected, subprotocol = await self.consumer2.connect()
+        await self.consumer2.connect()
 
     async def test__when_two_consumers_connected__and_schema_step_is_abandoned__expect_abandoned_schema_step_to_be_assigned_to_other_consumer(
         self,

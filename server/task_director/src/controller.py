@@ -21,7 +21,7 @@ class TaskDirectorController(AsyncConsumer):
         """
         This lock should be used whenever interacting with the `schema_instances` list below.
         """
-        self._schema_instances: list[SchemaInstance] = list()
+        self._schema_instances: list[SchemaInstance] = []
         super().__init__(*args, **kwargs)
 
     async def receive_message(self, message):
@@ -73,12 +73,12 @@ class TaskDirectorController(AsyncConsumer):
                     )
                     return instance
 
-            logger.info("No existing instance found for consumer " + consumer_id)
+            logger.info("No existing instance found for consumer %s", consumer_id)
             return self._create_schema_instance(msg)
 
     def _create_schema_instance(self, msg: dict) -> SchemaInstance:
         schema_details = SchemaDetails(msg["cache_id"], msg["schema_id"], msg["total_steps"])
-        logger.info("Creating schema instance with ID: " + schema_details.id)
+        logger.info("Creating schema instance with ID: %s", schema_details.id)
         schema_instance = SchemaInstance(schema_details)
         self._schema_instances.append(schema_instance)
         return schema_instance

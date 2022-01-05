@@ -37,6 +37,6 @@ class BazelTask(AbstractTask):
         if exit_code != BazelExitCodes.SUCCESS:
             self._logger.print("Build failure: " + str(stderr))
             return False
-        else:
-            print("Finished build task")
-            return True
+
+        print("Finished build task")
+        return True
