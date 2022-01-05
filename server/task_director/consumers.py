@@ -23,13 +23,8 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
         """
         response = json.loads(text_data)
         message = {"type": "receive.message", "consumer_id": self.channel_name, "message": response}
-        if self._schema_instance_id:
-            message["instance_id"] = self._schema_instance_id
 
         await self.channel_layer.send("controller", message)
-
-    async def assign_instance_id(self, message):
-        self._schema_instance_id = message["instance_id"]
 
     async def send_message(self, res):
         """

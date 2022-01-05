@@ -9,7 +9,7 @@ from task_director.src.schema_instance import SchemaInstance
 logger = logging.getLogger(__name__)
 
 
-class TaskDirectorController(AsyncConsumer):
+class Controller(AsyncConsumer):
     """
     This class is a mediator between connected consumers and existing schema instances.
     Consumers will call the `handle_received` method to forward messages to the most
@@ -21,6 +21,7 @@ class TaskDirectorController(AsyncConsumer):
         """
         This lock should be used whenever interacting with the `schema_instances` list below.
         """
+        self._consumer_to_instance_map: dict[str, SchemaInstance] = {}
         self._schema_instances: list[SchemaInstance] = []
         super().__init__(*args, **kwargs)
 
@@ -28,19 +29,15 @@ class TaskDirectorController(AsyncConsumer):
         msg = message["message"]
         consumer_id = message["consumer_id"]
 
-        if "instance_id" in message:
-            schema_instance = self._find_schema_instance_by_id(message["instance_id"])
+        if consumer_id in self._consumer_to_instance_map:
+            schema_instance = self._consumer_to_instance_map[consumer_id]
         else:
             # Find a matching schema instance or create one if it does not exist
             schema_instance = self._find_matching_schema_instance(msg, consumer_id)
 
             # Triage (assign) the current consumer to this schema instance if untriaged
             schema_instance.register_consumer(consumer_id, msg["repo_state"])
-
-            # Return the instance ID back to the consumer
-            await self.channel_layer.send(
-                consumer_id, {"type": "assign.instance.id", "instance_id": schema_instance.schema_details.id}
-            )
+            self._consumer_to_instance_map[consumer_id] = schema_instance
 
         await schema_instance.receive_message(msg, consumer_id)
 
@@ -90,6 +87,8 @@ class TaskDirectorController(AsyncConsumer):
         """
         consumer_id = message["consumer_id"]
         with self._lock:
+            if consumer_id in self._consumer_to_instance_map:
+                del self._consumer_to_instance_map[consumer_id]
             for instance in self._schema_instances:
                 instance.deregister_consumer(consumer_id)
                 if instance.get_total_registered_consumers() == 0:
