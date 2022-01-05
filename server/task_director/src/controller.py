@@ -1,46 +1,56 @@
 import threading
 import logging
 
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.consumer import AsyncConsumer
 
-from task_director.src.consumer_registry import ConsumerRegistry
 from task_director.src.schema_details import SchemaDetails
 from task_director.src.schema_instance import SchemaInstance
 
 logger = logging.getLogger(__name__)
 
 
-class TaskDirectorController:
+class TaskDirectorController(AsyncConsumer):
     """
     This class is a mediator between connected consumers and existing schema instances.
     Consumers will call the `handle_received` method to forward messages to the most
     relevant schema instance.
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self._lock = threading.Lock()
         """
         This lock should be used whenever interacting with the `schema_instances` list below.
         """
         self._schema_instances: list[SchemaInstance] = list()
-        self._untriaged_consumer_registry = ConsumerRegistry()
+        super().__init__(*args, **kwargs)
 
-    def assign_consumer_to_instance(self, msg: dict, consumer_id: str):
-        """
-        Called when a registered websocket connection sends a JSON message to the server. The job
-        of this method is to forward the message to a relevant schema instance, or create one if
-        it doesn't yet exist.
-        """
+    async def receive_message(self, message):
+        msg = message["message"]
+        consumer_id = message["consumer_id"]
 
-        # Find a matching schema instance or create one if it does not exist
-        schema_instance = self._find_matching_schema_instance(msg, consumer_id)
+        if "instance_id" in message:
+            schema_instance = self._find_schema_instance_by_id(message["instance_id"])
+        else:
+            # Find a matching schema instance or create one if it does not exist
+            schema_instance = self._find_matching_schema_instance(msg, consumer_id)
 
-        # Triage (assign) the current consumer to this schema instance if untriaged
-        if self._untriaged_consumer_registry.check_if_consumer_exists(consumer_id):
-            consumer = self._untriaged_consumer_registry.get_consumer(consumer_id, True)
-            schema_instance.register_consumer(consumer_id, consumer, msg["repo_state"])
+            # Triage (assign) the current consumer to this schema instance if untriaged
+            schema_instance.register_consumer(consumer_id, msg["repo_state"])
 
-        return schema_instance
+            # Return the instance ID back to the consumer
+            await self.channel_layer.send(
+                consumer_id, {"type": "assign.instance.id", "instance_id": schema_instance.schema_details.id}
+            )
+
+        await schema_instance.receive_message(msg, consumer_id)
+
+    def _find_schema_instance_by_id(self, schema_instance_id: str) -> SchemaInstance:
+        with self._lock:
+            for instance in self._schema_instances:
+                if instance.schema_details.id == schema_instance_id:
+                    return instance
+
+            raise Exception("Schema instance not found")
 
     def _find_matching_schema_instance(self, msg: dict, consumer_id: str) -> SchemaInstance:
         with self._lock:
@@ -73,28 +83,17 @@ class TaskDirectorController:
         self._schema_instances.append(schema_instance)
         return schema_instance
 
-    def register_consumer(self, consumer_id: str, consumer: AsyncJsonWebsocketConsumer):
-        """
-        Called when a new http request is upgraded to a websocket connection. As the consumer has
-        not yet given any schema information, is it put into an `untriaged registry` until it does
-        so.
-        """
-        self._untriaged_consumer_registry.add_consumer(consumer_id, consumer)
-
-    def deregister_consumer(self, consumer_id: str):
+    async def deregister_consumer(self, message: dict):
         """
         Called when a consumer disconnects. The consumer is removed from the untriaged registry
         (if it exists there) and also any schema instance which it is a part of.
         """
-        self._untriaged_consumer_registry.remove_consumer(consumer_id)
+        consumer_id = message["consumer_id"]
         with self._lock:
             for instance in self._schema_instances:
                 instance.deregister_consumer(consumer_id)
                 if instance.get_total_registered_consumers() == 0:
                     self._schema_instances.remove(instance)
-
-    def get_total_untriaged_consumers(self) -> int:
-        return self._untriaged_consumer_registry.get_total_registered_consumers()
 
     def get_total_registered_consumers(self) -> int:
         total_registered_consumers = 0
@@ -103,5 +102,19 @@ class TaskDirectorController:
                 total_registered_consumers += instance.get_total_registered_consumers()
         return total_registered_consumers
 
+    async def get_total_registered_consumers_msg(self, message: dict):
+        channel_name = message["channel_name"]
+        total_registered_consumers = self.get_total_registered_consumers()
+        await self.channel_layer.send(
+            channel_name, {"type": channel_name, "total_registered_consumers": total_registered_consumers}
+        )
+
     def get_total_running_schema_instances(self) -> int:
         return len(self._schema_instances)
+
+    async def get_total_running_schema_instances_msg(self, message: dict):
+        channel_name = message["channel_name"]
+        total_running_schema_instances = self.get_total_running_schema_instances()
+        await self.channel_layer.send(
+            channel_name, {"type": channel_name, "total_running_schema_instances": total_running_schema_instances}
+        )

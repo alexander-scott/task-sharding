@@ -1,9 +1,7 @@
-import json
 import logging
 import threading
 
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from task_director.src.consumer_registry import ConsumerRegistry
+from channels.layers import get_channel_layer
 from task_director.src.message_type import MessageType
 from task_director.src.schema_details import SchemaDetails
 
@@ -14,7 +12,8 @@ class SchemaInstance:
     def __init__(self, schema_details: SchemaDetails):
         self.schema_details = schema_details
 
-        self._consumer_registry = ConsumerRegistry()
+        self._channel_layer = get_channel_layer()
+        self._registered_consumers = set()
         self._in_progress_consumers = {}
         self._lock = threading.Lock()
         self._repo_states = {}
@@ -24,13 +23,13 @@ class SchemaInstance:
             MessageType.STEP_COMPLETE: self._receive_step_completed,
         }
 
-    def register_consumer(self, consumer_id: str, consumer: AsyncJsonWebsocketConsumer, repo_state: dict):
+    def register_consumer(self, consumer_id: str, repo_state: dict):
         self._print_with_prefix("Registering consumer " + consumer_id)
-        self._consumer_registry.add_consumer(consumer_id, consumer)
+        self._registered_consumers.add(consumer_id)
         self._repo_states[consumer_id] = repo_state
 
     def deregister_consumer(self, consumer_id: str):
-        self._consumer_registry.remove_consumer(consumer_id)
+        self._registered_consumers.remove(consumer_id)
         if consumer_id in self._in_progress_consumers:
             step_id = self._in_progress_consumers[consumer_id]
             del self._in_progress_consumers[consumer_id]
@@ -39,10 +38,10 @@ class SchemaInstance:
             del self._repo_states[consumer_id]
 
     def is_consumer_registered(self, uuid: str) -> bool:
-        return self._consumer_registry.check_if_consumer_exists(uuid)
+        return uuid in self._registered_consumers
 
     def get_total_registered_consumers(self) -> int:
-        return self._consumer_registry.get_total_registered_consumers()
+        return len(self._registered_consumers)
 
     def check_repo_state_is_aligned(self, repo_state: dict) -> bool:
         # Loop over every repository sent by the client
@@ -83,14 +82,14 @@ class SchemaInstance:
 
                 self._print_with_prefix("Assigning step ID " + str(step) + " to consumer " + consumer_id)
 
-                await self._consumer_registry.get_consumer(consumer_id).send(
-                    text_data=json.dumps(
-                        {
-                            "message_type": MessageType.BUILD_INSTRUCTION,
-                            "schema_id": self.schema_details.schema_id,
-                            "step_id": str(step),
-                        }
-                    )
+                await self._channel_layer.send(
+                    consumer_id,
+                    {
+                        "type": "send.message",
+                        "message_type": MessageType.BUILD_INSTRUCTION,
+                        "schema_id": self.schema_details.schema_id,
+                        "step_id": str(step),
+                    },
                 )
 
     async def _receive_step_completed(self, msg: dict, consumer_id: str):
@@ -125,15 +124,15 @@ class SchemaInstance:
 
             if steps_not_started == 0 and steps_in_progress == 0:
                 self._print_with_prefix("Schema completed")
-                for consumer_id, consumer in self._consumer_registry.get_consumers().items():
+                for consumer_id in self._registered_consumers:
                     self._print_with_prefix("Sending schema complete message to consumer " + consumer_id)
-                    await consumer.send(
-                        text_data=json.dumps(
-                            {
-                                "message_type": MessageType.SCHEMA_COMPLETE,
-                                "schema_id": self.schema_details.schema_id,
-                            }
-                        )
+                    await self._channel_layer.send(
+                        consumer_id,
+                        {
+                            "type": "send.message",
+                            "message_type": MessageType.SCHEMA_COMPLETE,
+                            "schema_id": self.schema_details.schema_id,
+                        },
                     )
                 return True
 
