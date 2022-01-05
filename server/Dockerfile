@@ -18,7 +18,7 @@ COPY ./requirements.txt /usr/src/app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # copy project
-COPY ./server /usr/src/app
+COPY . /usr/src/app
 
 FROM base AS server
 EXPOSE 8000
