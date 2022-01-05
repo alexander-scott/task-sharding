@@ -9,6 +9,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Hadolint Action
       uses: hadolint/hadolint-action@v1.6.0
+      with:
+        dockerfile: server/Dockerfile
   build:
     needs: lint
     runs-on: ubuntu-latest
