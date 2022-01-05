@@ -26,6 +26,7 @@ SECRET_KEY = "0$#7ltm5r&#c%2s(9vsy#0=$%4d6g^i&#06u9b^x^flmd*zsu&"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# If debug above is true, hosts must be added to this list. Alternatively * can be added here
 ALLOWED_HOSTS = []
 
 

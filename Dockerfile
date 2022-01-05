@@ -1,4 +1,4 @@
-FROM python:3.9.2-alpine
+FROM python:3.9.2-alpine AS base
 
 # set work directory
 WORKDIR /usr/src/app
@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # copy project
 COPY ./server /usr/src/app
 
+FROM base AS server
 EXPOSE 8000
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "server.asgi:application"]
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+FROM base AS controller
+CMD ["python", "manage.py", "runworker", "controller"]
