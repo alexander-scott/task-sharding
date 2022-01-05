@@ -60,12 +60,12 @@ class SchemaInstance:
                 consumer_patchset = consumer_repo["patchset"]
 
                 # Branch name must be the same
-                if not (client_branch == consumer_branch):
+                if not client_branch == consumer_branch:
                     return False
 
                 # Patchset must be the same or this consumers patchset may be in the clients additional patchsets list
-                if not (client_patchset == consumer_patchset):
-                    if not (consumer_patchset in client_additional_patchsets):
+                if not client_patchset == consumer_patchset:
+                    if not consumer_patchset in client_additional_patchsets:
                         return False
 
         return True
@@ -100,8 +100,8 @@ class SchemaInstance:
             if step_success:
                 self._print_with_prefix("Consumer " + consumer_id + " completed step " + step_id)
             else:
+                # TODO: Do something on a step failure
                 self._to_do_steps.append(int(step_id))
-                pass  # TODO: Do something on a step failure
             steps_not_started = len(self._to_do_steps)
             steps_in_progress = len(self._in_progress_consumers)
 

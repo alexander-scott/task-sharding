@@ -1,7 +1,6 @@
 import copy
 import json
 
-from channels.routing import URLRouter
 from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
 from channels.layers import get_channel_layer
@@ -294,7 +293,7 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                 consumers = []
                 for index, consumer_config in enumerate(consumer_configs):
                     consumer = WebsocketCommunicator(application, "/ws/api/1/" + str(index) + "/")
-                    connected, subprotocol = await consumer.connect()
+                    connected, _ = await consumer.connect()
                     self.assertTrue(connected)
                     consumers.append(consumer)
 
