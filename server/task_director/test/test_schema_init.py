@@ -9,316 +9,125 @@ from task_director.test.defaults import create_application
 from task_director.test.utils import proxy_message_from_channel_to_communicator, prompt_response_from_communicator
 
 
+def create_client_init_message_default(
+    repo_state=None, patchset_complexity=False, cache_id="1", schema_id="1", total_steps=1
+) -> dict:
+    if not repo_state:
+        repo_state = {
+            "org/repo_1": {
+                "base_ref": "main",
+                "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+            }
+        }
+    return {
+        "message_type": MessageType.INIT,
+        "repo_state": repo_state,
+        "patchset_complexity": {
+            "complex": patchset_complexity,
+        },
+        "cache_id": cache_id,
+        "schema_id": schema_id,
+        "total_steps": total_steps,
+    }
+
+
+def create_client_init_message_default_with_custom_repo_state(
+    repo_name="org/repo_1",
+    base_ref="main",
+    patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+    additional_patchsets=None,
+) -> dict:
+    repo_state = {
+        repo_name: {
+            "base_ref": base_ref,
+            "patchset": patchset,
+        }
+    }
+    if additional_patchsets:
+        repo_state[repo_name]["additional_patchsets"] = additional_patchsets
+    return create_client_init_message_default(repo_state=repo_state)
+
+
 param_list = [
     [
         "single_instance_connected",
-        [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            }
-        ],
+        [create_client_init_message_default()],
         1,
     ],
     [
         "two_instances_connected_with_identical_config",
-        [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-        ],
+        [create_client_init_message_default(), create_client_init_message_default()],
         1,
     ],
-    [
-        "two_instances_connected_with_differing_branch_names",
-        [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "master",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-        ],
-        2,
-    ],
-    [
-        "two_instances_connected_with_differing_patchsets",
-        [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b72",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-        ],
-        2,
-    ],
-    [
-        "two_instances_connected_with_differing_repo_names",
-        [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_2": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-        ],
-        2,
-    ],
-    [
-        "two_instances_connected_with_initial_patchset_present_in_additional_patchsets_list",
-        [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
-                        "additional_patchsets": [
-                            "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                        ],
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-        ],
-        1,
-    ],
-    [
-        "two_instances_connected_with_initial_patchset_not_present_in_additional_patchsets_list",
-        [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
-                        "additional_patchsets": [
-                            "234234eadf9uqhr9ueafbizdh923849efk99s8f",
-                        ],
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-        ],
-        2,
-    ],
+    # Core config tests
     [
         "two_instances_connected_with_differing_cache_id",
         [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "cache_id": "2",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
+            create_client_init_message_default(cache_id="1"),
+            create_client_init_message_default(cache_id="2"),
         ],
         2,
     ],
     [
         "two_instances_connected_with_differing_schema_id",
         [
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "1",
-                "total_steps": 1,
-            },
-            {
-                "message_type": MessageType.INIT,
-                "repo_state": {
-                    "org/repo_1": {
-                        "base_ref": "main",
-                        "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
-                    }
-                },
-                "patchset_complexity": {
-                    "complex": False,
-                },
-                "cache_id": "1",
-                "schema_id": "2",
-                "total_steps": 1,
-            },
+            create_client_init_message_default(schema_id="1"),
+            create_client_init_message_default(schema_id="2"),
+        ],
+        2,
+    ],
+    # Repo state tests
+    [
+        "two_instances_connected_with_differing_branch_names",
+        [
+            create_client_init_message_default_with_custom_repo_state(base_ref="master"),
+            create_client_init_message_default_with_custom_repo_state(base_ref="main"),
+        ],
+        2,
+    ],
+    [
+        "two_instances_connected_with_differing_patchsets",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b72"
+            ),
+        ],
+        2,
+    ],
+    [
+        "two_instances_connected_with_differing_repo_names",
+        [
+            create_client_init_message_default_with_custom_repo_state(repo_name="org/repo_1"),
+            create_client_init_message_default_with_custom_repo_state(repo_name="org/repo_2"),
+        ],
+        2,
+    ],
+    [
+        "two_instances_connected_with_initial_patchset_present_in_additional_patchsets_list",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+                additional_patchsets=["5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"],
+            ),
+        ],
+        1,
+    ],
+    [
+        "two_instances_connected_with_initial_patchset_not_present_in_additional_patchsets_list",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+                additional_patchsets=["234234eadf9uqhr9ueafbizdh923849efk99s8fg"],
+            ),
         ],
         2,
     ],
