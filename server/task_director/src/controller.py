@@ -51,8 +51,6 @@ class Controller(AsyncConsumer):
 
     def _find_matching_schema_instance(self, msg: dict, consumer_id: str) -> SchemaInstance:
         with self._lock:
-            # TODO: Add more logic to determine which consumers best match to a schema instance.
-            # instance. E.g. branch, cache instance, and git commit baseline are all necessary.
             schema_id = msg["schema_id"]
             cache_id = msg["cache_id"]
             repo_state = msg["repo_state"]

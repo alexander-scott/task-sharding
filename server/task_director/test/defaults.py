@@ -21,6 +21,9 @@ def create_default_client_init_message(total_steps=1):
                 "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
             }
         },
+        "patchset_complexity": {
+            "complex": False,
+        },
         "cache_id": "1",
         "total_steps": total_steps,
         "schema_id": "1",
