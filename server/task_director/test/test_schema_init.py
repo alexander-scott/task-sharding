@@ -137,6 +137,26 @@ param_list = [
         ],
         2,
     ],
+    [
+        "three_instances_connected_with_patchsets_present_across_all_instances",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+                additional_patchsets=["5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"],
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="2f05517de6887b51439fc2f62b836f5647978327",
+                additional_patchsets=[
+                    "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                    "29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+                ],
+            ),
+        ],
+        1,
+    ],
     # Patchset complexity tests
     [
         "two_instances_connected_with_first_clients_patchset_present_in_second_clients_additional_patchsets_list_but_the_second_patchset_is_complex",
@@ -148,6 +168,27 @@ param_list = [
                 patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
                 additional_patchsets=["5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"],
                 patchset_complexity=True,
+            ),
+        ],
+        2,
+    ],
+    [
+        "three_instances_connected_with_patchsets_present_across_all_instances_but_the_middle_instance_is_complex",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+                additional_patchsets=["5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"],
+                patchset_complexity=True,
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="2f05517de6887b51439fc2f62b836f5647978327",
+                additional_patchsets=[
+                    "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                    "29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+                ],
             ),
         ],
         2,
