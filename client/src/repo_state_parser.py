@@ -9,5 +9,5 @@ class RepoStateParser:
                 #     "ee36655f9fd3c76c21363a8b32e1569fa332c819",
                 #     "05c0d07a9d0354be8cc1696fae01c9322a33c18e",
                 # ],
-            }
+            },
         }

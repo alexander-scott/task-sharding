@@ -93,7 +93,10 @@ class TestClient(unittest.TestCase):
                 {
                     "message_type": MessageType.INIT,
                     "repo_state": {
-                        "org/repo_1": {"base_ref": "main", "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"}
+                        "org/repo_1": {"base_ref": "main", "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"},
+                    },
+                    "patchset_complexity": {
+                        "complex": False,
                     },
                     "cache_id": "1",
                     "schema_id": "sleep",
