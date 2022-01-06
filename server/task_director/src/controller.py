@@ -21,23 +21,26 @@ class Controller(AsyncConsumer):
         """
         This lock should be used whenever interacting with the `schema_instances` list below.
         """
-        self._consumer_to_instance_map: dict[str, SchemaInstance] = {}
+        self._consumer_id_to_instance_map: dict[str, SchemaInstance] = {}
+        self._id_to_consumer_id_map: dict[str, str] = {}
         self._schema_instances: list[SchemaInstance] = []
         super().__init__(*args, **kwargs)
 
     async def receive_message(self, message):
         msg = message["message"]
         consumer_id = message["consumer_id"]
+        id = message["id"]
 
-        if consumer_id in self._consumer_to_instance_map:
-            schema_instance = self._consumer_to_instance_map[consumer_id]
+        if consumer_id in self._consumer_id_to_instance_map:
+            schema_instance = self._consumer_id_to_instance_map[consumer_id]
         else:
             # Find a matching schema instance or create one if it does not exist
             schema_instance = self._find_matching_schema_instance(msg, consumer_id)
 
             # Triage (assign) the current consumer to this schema instance if untriaged
             schema_instance.register_consumer(consumer_id, msg["repo_state"])
-            self._consumer_to_instance_map[consumer_id] = schema_instance
+            self._consumer_id_to_instance_map[consumer_id] = schema_instance
+            self._id_to_consumer_id_map[id] = consumer_id
 
         await schema_instance.receive_message(msg, consumer_id)
 
@@ -87,8 +90,8 @@ class Controller(AsyncConsumer):
         """
         consumer_id = message["consumer_id"]
         with self._lock:
-            if consumer_id in self._consumer_to_instance_map:
-                del self._consumer_to_instance_map[consumer_id]
+            if consumer_id in self._consumer_id_to_instance_map:
+                del self._consumer_id_to_instance_map[consumer_id]
             for instance in self._schema_instances:
                 instance.deregister_consumer(consumer_id)
                 if instance.get_total_registered_consumers() == 0:
@@ -117,3 +120,13 @@ class Controller(AsyncConsumer):
         await self.channel_layer.send(
             channel_name, {"type": channel_name, "total_running_schema_instances": total_running_schema_instances}
         )
+
+    def get_schema_instance_id_for_id(self, id: str) -> str:
+        consumer_id = self._id_to_consumer_id_map[id]
+        return self._consumer_id_to_instance_map[consumer_id].schema_details.id
+
+    async def get_schema_instance_id_for_id_msg(self, message: dict) -> str:
+        channel_name = message["channel_name"]
+        id = message["id"]
+        schema_instance_id = self.get_schema_instance_id_for_id(id)
+        await self.channel_layer.send(channel_name, {"type": channel_name, "schema_instance_id": schema_instance_id})

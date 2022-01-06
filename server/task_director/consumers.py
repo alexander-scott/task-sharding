@@ -22,7 +22,7 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
         Get the event and send the appropriate event
         """
         response = json.loads(text_data)
-        message = {"type": "receive.message", "consumer_id": self.channel_name, "message": response}
+        message = {"type": "receive.message", "id": self.id, "consumer_id": self.channel_name, "message": response}
 
         await self.channel_layer.send("controller", message)
 
