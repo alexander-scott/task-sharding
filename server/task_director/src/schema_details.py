@@ -1,11 +1,9 @@
 import uuid
 
-from dataclasses import dataclass
 
-
-@dataclass
 class SchemaDetails:
-    cache_id: str
-    schema_id: str
-    total_steps: int
-    id: str = str(uuid.uuid4())
+    def __init__(self, cache_id: str, schema_id: str, total_steps: int) -> None:
+        self.cache_id = cache_id
+        self.schema_id = schema_id
+        self.total_steps = total_steps
+        self.id = str(uuid.uuid4())

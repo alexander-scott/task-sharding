@@ -157,6 +157,24 @@ param_list = [
         ],
         [[0, 1, 2]],
     ],
+    [
+        "three_instances_connected_with_patchset_from_first_instance_present_in_third_instance_and_not_second_instance",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="2f05517de6887b51439fc2f62b836f5647978327",
+                additional_patchsets=[
+                    "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
+                ],
+            ),
+        ],
+        [[0, 2], [1]],
+    ],
     # Patchset complexity tests
     [
         "two_instances_connected_with_first_clients_patchset_present_in_second_clients_additional_patchsets_list_but_the_second_patchset_is_complex",
@@ -173,7 +191,7 @@ param_list = [
         [[0], [1]],
     ],
     [
-        "three_instances_connected_with_patchsets_present_across_all_instances_but_the_middle_instance_is_complex",
+        "three_instances_connected_with_patchsets_present_across_all_instances_but_the_second_instance_is_complex",
         [
             create_client_init_message_default_with_custom_repo_state(
                 patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
@@ -194,7 +212,7 @@ param_list = [
         [[0], [1, 2]],
     ],
     [
-        "three_instances_connected_with_patchsets_present_across_all_instances_but_the_last_instance_is_complex",
+        "three_instances_connected_with_patchsets_present_across_all_instances_but_the_third_instance_is_complex",
         [
             create_client_init_message_default_with_custom_repo_state(
                 patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
@@ -225,7 +243,7 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                 controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
 
                 consumers = []
-                consumer_to_instance_map = {}
+                consumer_to_instance_id_map = {}
                 for index, consumer_config in enumerate(consumer_configs):
                     consumer = WebsocketCommunicator(application, "/ws/api/1/" + str(index) + "/")
                     connected, _ = await consumer.connect()
@@ -245,13 +263,15 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                         "schema_instance_id",
                         {"id": str(index)},
                     )
-                    consumer_to_instance_map[index] = assigned_instance_id
+                    consumer_to_instance_id_map[index] = assigned_instance_id
 
                 # Assert all consumers in each arrangement belong to the same instance
                 for arrangement in expected_consumer_arrangement:
                     arrangement_instance_ids = []
                     for consumer in arrangement:
-                        arrangement_instance_ids.append(consumer_to_instance_map[consumer])
+                        instance_id = consumer_to_instance_id_map[consumer]
+                        arrangement_instance_ids.append(instance_id)
+
                     self.assertTrue(all(x == arrangement_instance_ids[0] for x in arrangement_instance_ids))
 
                 total_registered_consumers = await prompt_response_from_communicator(

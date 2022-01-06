@@ -53,25 +53,42 @@ class Controller(AsyncConsumer):
             raise Exception("Schema instance not found")
 
     def _find_matching_schema_instance(self, msg: dict, consumer_id: str) -> SchemaInstance:
+        """
+        Determines which schema instance is most relevant for a new consumer.
+        It does this by looping over every existing schema instance and finds the
+        instance which the highest number of patchsets that the new consumer has.
+        This instance must also share the same schema_id and cache_id, and much
+        not be a complex patchset.
+
+        If no instance is found, a new schema instance will be created instead.
+        """
         with self._lock:
-            schema_id = msg["schema_id"]
-            cache_id = msg["cache_id"]
-            repo_state = msg["repo_state"]
             patchset_complexity = msg["patchset_complexity"]
-            for instance in self._schema_instances:
-                if (
-                    instance.schema_details.schema_id == schema_id
-                    and instance.schema_details.cache_id == cache_id
-                    and instance.check_repo_state_is_aligned(repo_state)
-                    and not patchset_complexity["complex"]
-                ):
+            if not patchset_complexity["complex"]:
+                schema_id = msg["schema_id"]
+                cache_id = msg["cache_id"]
+                repo_state = msg["repo_state"]
+
+                matching_instance = None
+                highest_instance_score = -1
+                for instance in self._schema_instances:
+                    if (
+                        instance.schema_details.schema_id == schema_id
+                        and instance.schema_details.cache_id == cache_id
+                        and not patchset_complexity["complex"]
+                    ):
+                        instance_score = instance.get_total_common_patchsets_in_repo_state(repo_state)
+                        if instance_score > highest_instance_score:
+                            highest_instance_score = instance_score
+                            matching_instance = instance
+
+                if matching_instance:
                     logger.info(
-                        "Consumer "
-                        + consumer_id
-                        + " would be a perfect fit in existing instance: "
-                        + instance.schema_details.id
+                        "Consumer %s would be a perfect fit in existing instance: %s",
+                        consumer_id,
+                        matching_instance.schema_details.id,
                     )
-                    return instance
+                    return matching_instance
 
             logger.info("No existing instance found for consumer %s", consumer_id)
             return self._create_schema_instance(msg)
