@@ -20,14 +20,12 @@ async def prompt_response_from_communicator(
     communicator: any,
     type: str,
     response_key: str = None,
+    message: dict = {},
     channel_layer: str = "testing",
 ):
-    await communicator.send_input(
-        {
-            "type": type,
-            "channel_name": channel_layer,
-        }
-    )
+    message["type"] = type
+    message["channel_name"] = channel_layer
+    await communicator.send_input(message)
     instances_created_msg = await get_channel_layer().receive(channel_layer)
     if response_key:
         return instances_created_msg[response_key]
