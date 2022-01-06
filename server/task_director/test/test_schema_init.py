@@ -241,7 +241,7 @@ class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
                     # Get the instance ID this consumer was assigned to
                     assigned_instance_id = await prompt_response_from_communicator(
                         controller,
-                        "get.schema.instance.id.for.id.msg",
+                        "get.schema.instance.id.for.client.id.msg",
                         "schema_instance_id",
                         {"id": str(index)},
                     )

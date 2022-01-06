@@ -9,12 +9,14 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         self.api_version = self.scope["url_route"]["kwargs"]["api_version"]
-        self.id = self.scope["url_route"]["kwargs"]["id"]
+        self.client_id = self.scope["url_route"]["kwargs"]["id"]
 
         await self.accept()
 
     async def disconnect(self, code):
-        await self.channel_layer.send("controller", {"type": "deregister.consumer", "consumer_id": self.channel_name})
+        await self.channel_layer.send(
+            "controller", {"type": "deregister.consumer", "client_id": self.client_id, "consumer_id": self.channel_name}
+        )
 
     async def receive(self, text_data):
         """
@@ -22,7 +24,12 @@ class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
         Get the event and send the appropriate event
         """
         response = json.loads(text_data)
-        message = {"type": "receive.message", "id": self.id, "consumer_id": self.channel_name, "message": response}
+        message = {
+            "type": "receive.message",
+            "client_id": self.client_id,
+            "consumer_id": self.channel_name,
+            "message": response,
+        }
 
         await self.channel_layer.send("controller", message)
 
