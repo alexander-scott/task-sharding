@@ -21,6 +21,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -39,6 +42,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -50,6 +56,9 @@ param_list = [
                         "base_ref": "main",
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "1",
@@ -69,6 +78,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -80,6 +92,9 @@ param_list = [
                         "base_ref": "main",
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "1",
@@ -99,6 +114,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -110,6 +128,9 @@ param_list = [
                         "base_ref": "main",
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b72",
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "1",
@@ -129,6 +150,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -140,6 +164,9 @@ param_list = [
                         "base_ref": "main",
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "1",
@@ -159,6 +186,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -173,6 +203,9 @@ param_list = [
                             "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                         ],
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "1",
@@ -192,6 +225,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -206,6 +242,9 @@ param_list = [
                             "234234eadf9uqhr9ueafbizdh923849efk99s8f",
                         ],
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "1",
@@ -224,6 +263,9 @@ param_list = [
                         "base_ref": "main",
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "1",
@@ -255,6 +297,9 @@ param_list = [
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
                 },
+                "patchset_complexity": {
+                    "complex": False,
+                },
                 "cache_id": "1",
                 "schema_id": "1",
                 "total_steps": 1,
@@ -266,6 +311,9 @@ param_list = [
                         "base_ref": "main",
                         "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     }
+                },
+                "patchset_complexity": {
+                    "complex": False,
                 },
                 "cache_id": "1",
                 "schema_id": "2",

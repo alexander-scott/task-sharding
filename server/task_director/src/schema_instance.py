@@ -115,9 +115,9 @@ class SchemaInstance:
             )
             await self._send_build_instructions(msg, consumer_id)
         else:
-            await self.check_if_schema_is_completed()
+            await self._send_schema_complete()
 
-    async def check_if_schema_is_completed(self):
+    async def _send_schema_complete(self):
         with self._lock:
             steps_not_started = len(self._to_do_steps)
             steps_in_progress = len(self._in_progress_consumers)
