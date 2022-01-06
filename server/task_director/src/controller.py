@@ -54,11 +54,13 @@ class Controller(AsyncConsumer):
             schema_id = msg["schema_id"]
             cache_id = msg["cache_id"]
             repo_state = msg["repo_state"]
+            patchset_complexity = msg["patchset_complexity"]
             for instance in self._schema_instances:
                 if (
                     instance.schema_details.schema_id == schema_id
                     and instance.schema_details.cache_id == cache_id
                     and instance.check_repo_state_is_aligned(repo_state)
+                    and not patchset_complexity["complex"]
                 ):
                     logger.info(
                         "Consumer "

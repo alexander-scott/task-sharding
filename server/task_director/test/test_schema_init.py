@@ -36,6 +36,7 @@ def create_client_init_message_default_with_custom_repo_state(
     base_ref="main",
     patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
     additional_patchsets=None,
+    **kwargs
 ) -> dict:
     repo_state = {
         repo_name: {
@@ -45,10 +46,15 @@ def create_client_init_message_default_with_custom_repo_state(
     }
     if additional_patchsets:
         repo_state[repo_name]["additional_patchsets"] = additional_patchsets
-    return create_client_init_message_default(repo_state=repo_state)
+    return create_client_init_message_default(repo_state=repo_state, **kwargs)
 
 
 param_list = [
+    [
+        "no_instances_connected",
+        [],
+        0,
+    ],
     [
         "single_instance_connected",
         [create_client_init_message_default()],
@@ -86,18 +92,6 @@ param_list = [
         2,
     ],
     [
-        "two_instances_connected_with_differing_patchsets",
-        [
-            create_client_init_message_default_with_custom_repo_state(
-                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
-            ),
-            create_client_init_message_default_with_custom_repo_state(
-                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b72"
-            ),
-        ],
-        2,
-    ],
-    [
         "two_instances_connected_with_differing_repo_names",
         [
             create_client_init_message_default_with_custom_repo_state(repo_name="org/repo_1"),
@@ -106,7 +100,19 @@ param_list = [
         2,
     ],
     [
-        "two_instances_connected_with_initial_patchset_present_in_additional_patchsets_list",
+        "two_instances_connected_with_differing_patchsets",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas"
+            ),
+        ],
+        2,
+    ],
+    [
+        "two_instances_connected_with_first_clients_patchset_present_in_second_clients_additional_patchsets_list",
         [
             create_client_init_message_default_with_custom_repo_state(
                 patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
@@ -119,7 +125,7 @@ param_list = [
         1,
     ],
     [
-        "two_instances_connected_with_initial_patchset_not_present_in_additional_patchsets_list",
+        "two_instances_connected_with_first_clients_patchset_not_present_in_second_clients_additional_patchsets_list",
         [
             create_client_init_message_default_with_custom_repo_state(
                 patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
@@ -127,6 +133,21 @@ param_list = [
             create_client_init_message_default_with_custom_repo_state(
                 patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
                 additional_patchsets=["234234eadf9uqhr9ueafbizdh923849efk99s8fg"],
+            ),
+        ],
+        2,
+    ],
+    # Patchset complexity tests
+    [
+        "two_instances_connected_with_first_clients_patchset_present_in_second_clients_additional_patchsets_list_but_the_second_patchset_is_complex",
+        [
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"
+            ),
+            create_client_init_message_default_with_custom_repo_state(
+                patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
+                additional_patchsets=["5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"],
+                patchset_complexity=True,
             ),
         ],
         2,
