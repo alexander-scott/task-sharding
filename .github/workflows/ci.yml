@@ -113,7 +113,6 @@ jobs:
         dockerfile: server/Dockerfile
 
   client_package_release:
-    if: startsWith(github.ref, 'refs/tags/')
     needs: [pylint, unit_tests, coverage, integration]
     runs-on: ubuntu-latest
     steps:
