@@ -4,22 +4,21 @@ import threading
 
 from websocket import WebSocketConnectionClosedException
 
-from src.connection import Connection
-from src.logger import Logger
-from src.message_type import MessageType
-from src.patchset_complexity import PatchsetComplexity
-from src.repo_state_parser import RepoStateParser
-from src.schema_loader import SchemaLoader
-from src.task.abstract_task import AbstractTask
-from src.task.task_factory import get_class_by_name
+from .connection import Connection
+from .logger import Logger
+from .message_type import MessageType
+from .patchset_complexity import PatchsetComplexity
+from .repo_state_parser import RepoStateParser
+from .schema_loader import SchemaLoader
 
 
 class Client:
-    def __init__(self, config: any, connection: Connection, logger: Logger):
+    def __init__(self, config: any, connection: Connection, logger: Logger, task_type: any):
         self._config = config
         self._connection = connection
         self._logger = logger
         self._schema = SchemaLoader.load_schema(config.schema_path)
+        self._task_type = task_type
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
@@ -91,12 +90,9 @@ class Client:
         if not self._build_in_progress:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
 
-        task: AbstractTask = get_class_by_name(self._schema["task_type"])
-        task.set_logger(self._logger)
-        if self._config.workspace_path:
-            task.set_cwd(self._config.workspace_path)
+        task = self._task_type()
         task.load_schema(self._schema, step_id)
-        task_success = task.run()
+        task_success = task.run(self._config.workspace_path)
 
         self._build_in_progress = False
 
