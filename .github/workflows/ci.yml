@@ -82,13 +82,13 @@ jobs:
     timeout-minutes: 5
     strategy:
       matrix:
-        python-version: ["3.9", "3.10"]
+        example-name: ["sleep", "bazel"]
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.9.
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.9
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -96,9 +96,9 @@ jobs:
     - name: Start redis container for django channels
       run: |
         docker run -p 6379:6379 -d redis:5
-    - name: Sleep integration test
+    - name: Run integration test
       run: |
-        ./examples/sleep/run-sleep-example.sh
+        ./examples/${{ matrix.example-name }}/run-example.sh
 
   docker_lint:
     runs-on: ubuntu-latest
@@ -109,7 +109,8 @@ jobs:
       with:
         dockerfile: server/Dockerfile
 
-  docker_build:
+  docker_build_and_push:
+    if: github.ref == 'refs/heads/main'
     needs: [docker_lint, pylint, unit_tests, coverage, integration]
     runs-on: ubuntu-latest
     steps:
