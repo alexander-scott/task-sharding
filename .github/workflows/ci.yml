@@ -113,7 +113,6 @@ jobs:
         dockerfile: server/Dockerfile
 
   docker_build_and_push:
-    if: github.ref == 'refs/heads/main'
     needs: [docker_lint, pylint, unit_tests, coverage, integration]
     runs-on: ubuntu-latest
     steps:
@@ -134,7 +133,7 @@ jobs:
       with:
         context: ./server
         target: server
-        push: true
+        push: ${{ github.ref == 'refs/heads/main' }}
         tags: |
           ghcr.io/alexander-scott/task-sharding/server:latest
 
@@ -143,6 +142,6 @@ jobs:
       with:
         context: ./server
         target: controller
-        push: true
+        push: ${{ github.ref == 'refs/heads/main' }}
         tags: |
           ghcr.io/alexander-scott/task-sharding/controller:latest
