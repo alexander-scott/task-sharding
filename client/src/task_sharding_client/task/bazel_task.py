@@ -1,8 +1,6 @@
 import subprocess
 from enum import IntEnum
 
-from src.task.abstract_task import AbstractTask
-
 
 class BazelExitCodes(IntEnum):
     # Exit codes common to all commands:
@@ -24,18 +22,18 @@ class BazelExitCodes(IntEnum):
     COMMAND_FAILURE = 7
 
 
-class BazelTask(AbstractTask):
+class BazelTask:
     def load_schema(self, schema: dict, step_id: str):
         self._target = schema["steps"][int(step_id)]["task"]
 
-    def run(self):
-        self._logger.print("Starting build task")
-        proc = subprocess.Popen(["bazel", "test", self._target], cwd=self._cwd)
+    def run(self, cwd: str):
+        print("Starting build task")
+        proc = subprocess.Popen(["bazel", "test", self._target], cwd=cwd)
         stdout, stderr = proc.communicate()
         exit_code = proc.wait()
 
         if exit_code != BazelExitCodes.SUCCESS:
-            self._logger.print("Build failure: " + str(stderr))
+            print("Build failure: " + str(stderr))
             return False
 
         print("Finished build task")
