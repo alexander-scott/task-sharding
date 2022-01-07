@@ -1,8 +1,9 @@
-from src.arg_parse import parse_input_arguments
-from src.connection import Connection
-from src.logger import Logger
-from src.client import Client
-from src.task.sleep_task import SleepTask
+from task_sharding_client.arg_parse import parse_input_arguments
+from task_sharding_client.connection import Connection
+from task_sharding_client.logger import Logger
+from task_sharding_client.client import Client
+
+from sleep_task import SleepTask
 
 
 def main():

@@ -3,9 +3,10 @@ import queue
 import threading
 import unittest
 
-from src.client import Client
-from src.logger import Logger
-from src.message_type import MessageType
+from src.task_sharding_client.client import Client
+from src.task_sharding_client.logger import Logger
+from src.task_sharding_client.message_type import MessageType
+from src.task_sharding_client.task.default_task import DefaultTask
 
 
 class MockConnection:
@@ -56,7 +57,7 @@ class TestClient(unittest.TestCase):
         """
         config = MockConfiguration("1", "1", "./client/test/test_schema.yaml", "", "test")
         with MockConnection() as connection:
-            client = Client(config, connection, self.logger)
+            client = Client(config, connection, self.logger, DefaultTask)
             client_thread = threading.Thread(target=client.run)
             client_thread.start()
 
