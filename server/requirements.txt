@@ -13,7 +13,7 @@ click==8.0.3
 constantly==15.1.0
 cryptography==36.0.1
 daphne==3.0.2
-Django==3.1.14
+Django==4.0.1
 hiredis==2.0.0
 hyperlink==21.0.0
 idna==3.3
