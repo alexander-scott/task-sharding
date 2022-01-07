@@ -9,12 +9,12 @@ services:
   server:
     depends_on:
       - redis_backend
-    image: task-director-server:latest
+    image: ghcr.io/alexander-scott/task-sharding/server:latest
 
   controller:
     depends_on:
       - redis_backend
-    image: task-director-controller:latest
+    image: ghcr.io/alexander-scott/task-sharding/controller:latest
 
   nginx:
     depends_on:
