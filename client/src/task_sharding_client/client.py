@@ -93,9 +93,9 @@ class Client:
                 self._task_thread.terminate()
                 self._task_thread = None
 
-        self._task_thread = multiprocessing.Process(target=lambda: self._run_build_instructions(msg))
-        self._task_thread.daemon = True
-        self._task_thread.start()
+        task_thread = threading.Thread(target=lambda: self._run_build_instructions(msg))
+        task_thread.daemon = True
+        task_thread.start()
         return True
 
     def _run_build_instructions(self, msg: dict):
@@ -104,13 +104,26 @@ class Client:
         step_id = msg["step_id"]
 
         task_runner = self._task_runner(self._schema, self._config)
-        task_success = task_runner.run(step_id)
+        return_value = multiprocessing.SimpleQueue()
+        self._task_thread = multiprocessing.Process(
+            target=task_runner.run,
+            args=(
+                step_id,
+                return_value,
+            ),
+        )
+        self._task_thread.start()
+        self._task_thread.join()
+
+        if return_value.empty():
+            logger.warning("Process did not return any value")
+            return
 
         step_message = {
             "message_type": MessageType.STEP_COMPLETE,
             "schema_id": self._schema["name"],
             "step_id": step_id,
-            "step_success": task_success,
+            "step_success": return_value.get(),
         }
 
         logger.info("Sending step complete message: " + str(step_message))

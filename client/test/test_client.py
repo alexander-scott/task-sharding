@@ -1,6 +1,8 @@
 import json
+import logging
 import queue
 import threading
+from time import sleep
 import unittest
 
 from src.task_sharding_client.client import Client
@@ -18,6 +20,7 @@ class MockConnection(Connection):
         return None
 
     def send_message(self, msg: dict):
+        print(msg)
         self.sent_messages.put(msg)
 
     def get_sent_msg(self):
@@ -47,6 +50,7 @@ class TestClient(unittest.TestCase):
                 "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
             },
         }
+        logging.basicConfig(level=logging.INFO)
         config = MockConfiguration("1", "1", "./client/test/test_schema.yaml")
         with MockConnection("localhost:8000", "1") as connection:
             client = Client(config, connection, DefaultTask, False, repo_state)
