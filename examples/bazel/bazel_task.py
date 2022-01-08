@@ -2,6 +2,8 @@ import logging
 import subprocess
 from enum import IntEnum
 
+from task_sharding_client.task_runner import TaskRunner
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,13 +27,12 @@ class BazelExitCodes(IntEnum):
     COMMAND_FAILURE = 7
 
 
-class BazelTask:
-    def load_schema(self, schema: dict, step_id: str):
-        self._target = schema["steps"][int(step_id)]["task"]
-
-    def run(self, cwd: str):
+class BazelTask(TaskRunner):
+    def run(self, step_id: str):
         logger.info("Starting build task")
-        proc = subprocess.Popen(["bazel", "test", self._target], cwd=cwd)
+
+        target = self._schema["steps"][int(step_id)]["task"]
+        proc = subprocess.Popen(["bazel", "test", target], cwd=self._config.workspace_path)
         stdout, stderr = proc.communicate()
         exit_code = proc.wait()
 
