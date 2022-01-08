@@ -29,8 +29,9 @@ class BazelTask(TaskRunner):
 
 def main():
     parser = argparse.ArgumentParser(description="inputs for script")
-    parser.add_argument("--workspace_path", help="Path to workspace", required=False)
+    parser.add_argument("--workspace_path", help="Path to workspace", required=True)
     configuration = parse_input_arguments(parser)
+
     with Connection("localhost:8000", configuration.client_id) as connection:
         client = Client(configuration, connection, BazelTask)
         client.run()

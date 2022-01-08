@@ -49,7 +49,7 @@ class TestClient(unittest.TestCase):
         }
         config = MockConfiguration("1", "1", "./client/test/test_schema.yaml")
         with MockConnection("localhost:8000", "1") as connection:
-            client = Client(config, connection, DefaultTask, repo_state)
+            client = Client(config, connection, DefaultTask, False, repo_state)
             client_thread = threading.Thread(target=client.run)
             client_thread.start()
 
@@ -88,9 +88,7 @@ class TestClient(unittest.TestCase):
                     "repo_state": {
                         "org/repo_1": {"base_ref": "main", "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"},
                     },
-                    "patchset_complexity": {
-                        "complex": False,
-                    },
+                    "complex_patchset": False,
                     "cache_id": "1",
                     "schema_id": "sleep",
                     "total_steps": 4,

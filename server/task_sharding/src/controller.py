@@ -63,8 +63,8 @@ class Controller(AsyncConsumer):
         If no instance is found, a new schema instance will be created instead.
         """
         with self._lock:
-            patchset_complexity = msg["patchset_complexity"]
-            if not patchset_complexity["complex"]:
+            complex_patchset = msg["complex_patchset"]
+            if not complex_patchset:
                 schema_id = msg["schema_id"]
                 cache_id = msg["cache_id"]
                 repo_state = msg["repo_state"]
@@ -75,7 +75,7 @@ class Controller(AsyncConsumer):
                     if (
                         instance.schema_details.schema_id == schema_id
                         and instance.schema_details.cache_id == cache_id
-                        and not patchset_complexity["complex"]
+                        and not complex_patchset
                     ):
                         instance_score = instance.get_total_common_patchsets_in_repo_state(repo_state)
                         if instance_score > highest_instance_score:
