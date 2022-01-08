@@ -1,5 +1,8 @@
+import logging
 import subprocess
 from enum import IntEnum
+
+logger = logging.getLogger(__name__)
 
 
 class BazelExitCodes(IntEnum):
@@ -27,14 +30,14 @@ class BazelTask:
         self._target = schema["steps"][int(step_id)]["task"]
 
     def run(self, cwd: str):
-        print("Starting build task")
+        logger.info("Starting build task")
         proc = subprocess.Popen(["bazel", "test", self._target], cwd=cwd)
         stdout, stderr = proc.communicate()
         exit_code = proc.wait()
 
         if exit_code != BazelExitCodes.SUCCESS:
-            print("Build failure: " + str(stderr))
+            logger.error("Build failure: " + str(stderr))
             return False
 
-        print("Finished build task")
+        logger.info("Finished build task")
         return True

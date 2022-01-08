@@ -1,4 +1,7 @@
+import logging
 from time import sleep
+
+logger = logging.getLogger(__name__)
 
 
 class SleepTask:
@@ -6,7 +9,7 @@ class SleepTask:
         self._sleep_amount = schema["steps"][int(step_id)]["task"]
 
     def run(self, cwd: str) -> bool:
-        print("Starting build task")
+        logger.info("Starting build task")
         sleep(self._sleep_amount)
-        print("Finished build task")
+        logger.info("Finished build task")
         return True
