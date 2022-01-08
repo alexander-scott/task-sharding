@@ -4,7 +4,7 @@ import subprocess
 
 from task_sharding_client.arg_parse import parse_input_arguments
 from task_sharding_client.connection import Connection
-from task_sharding_client.client import Client, ClientConfig
+from task_sharding_client.client import Client
 from task_sharding_client.task_runner import TaskRunner
 
 logger = logging.getLogger(__name__)
