@@ -20,7 +20,6 @@ class MockConnection(Connection):
         return None
 
     def send_message(self, msg: dict):
-        print(msg)
         self.sent_messages.put(msg)
 
     def get_sent_msg(self):

@@ -74,7 +74,7 @@ class Client:
         # Run an infinite loop that is constantly waiting for messages.
         while self._message_listening:
             try:
-                response = self._connection.get_latest_message(1)
+                response = self._connection.get_latest_message()
                 self._process_message(json.loads(response))
             except queue.Empty:
                 continue
