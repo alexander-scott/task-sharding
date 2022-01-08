@@ -1,6 +1,7 @@
 import json
 import logging
 import multiprocessing
+from multiprocessing.context import Process
 import queue
 import threading
 
@@ -42,8 +43,8 @@ class Client:
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
         }
         self._message_listening = False
-        self._build_in_progress = False
         self._build_in_progress_lock = threading.Lock()
+        self._task_thread: Process = None
 
     def run(self):
         # Send a message to the server about our requirements.
@@ -88,14 +89,13 @@ class Client:
         # thread continues to operate in the background.
         logger.info("Received build instructions message: " + str(msg))
         with self._build_in_progress_lock:
-            if self._build_in_progress:
-                # TODO: Handle this more gracefully, as this is most likely a server-side problem.
-                raise Exception("Build is currently in progress, yet we received a build instruction.")
-            self._build_in_progress = True
+            if self._task_thread:
+                self._task_thread.terminate()
+                self._task_thread = None
 
-        task_thread = multiprocessing.Process(target=lambda: self._run_build_instructions(msg))
-        task_thread.daemon = True
-        task_thread.start()
+        self._task_thread = multiprocessing.Process(target=lambda: self._run_build_instructions(msg))
+        self._task_thread.daemon = True
+        self._task_thread.start()
         return True
 
     def _run_build_instructions(self, msg: dict):
@@ -103,13 +103,8 @@ class Client:
         # server when it is complete.
         step_id = msg["step_id"]
 
-        if not self._build_in_progress:
-            raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
-
         task_runner = self._task_runner(self._schema, self._config)
         task_success = task_runner.run(step_id)
-
-        self._build_in_progress = False
 
         step_message = {
             "message_type": MessageType.STEP_COMPLETE,
