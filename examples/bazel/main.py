@@ -9,7 +9,7 @@ from bazel_task import BazelTask
 
 def main():
     configuration = parse_input_arguments()
-    with Connection("ws://localhost:8000/ws/api/1/" + configuration.client_id + "/") as connection:
+    with Connection("localhost:8000", configuration.client_id) as connection:
         client = Client(configuration, connection, BazelTask)
         client.run()
 

@@ -8,14 +8,15 @@ import websocket
 
 
 INITIAL_CONN_TIMEOUT = 5
+URL_FORMAT = "ws://{}/ws/api/1/{}/"
 
 logger = logging.getLogger(__name__)
 
 
 class Connection:
-    def __init__(self, server_url: str):
+    def __init__(self, server_url: str, client_id: str):
         self._received_messages = queue.Queue()
-        self._websocket = self._init_connection(server_url)
+        self._websocket = self._init_connection(URL_FORMAT.format(server_url, client_id))
 
     def __enter__(self):
         return self
@@ -47,7 +48,7 @@ class Connection:
                 sleep(1)
 
         if not web_socket.sock.connected:
-            raise Exception("Failed to connect")
+            raise websocket.WebSocketException("Failed to connect")
 
         return web_socket
 
@@ -73,7 +74,8 @@ class Connection:
 
     # Main Thread
     def close_websocket(self):
-        self._websocket.close()
+        if self._websocket:
+            self._websocket.close()
 
     # Main Thread
     def get_latest_message(self, timeout: float) -> dict:
