@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class BazelTask(TaskRunner):
-    def run(self, step_id: str):
+    def run(self, step_id: str, return_queue):
         logger.info("Starting build task")
 
         target = self._schema["steps"][int(step_id)]["task"]
@@ -21,10 +21,10 @@ class BazelTask(TaskRunner):
 
         if exit_code != 0:
             logger.error("Build failure: " + str(stderr))
-            return False
-
-        logger.info("Finished build task")
-        return True
+            return_queue.put(False)
+        else:
+            logger.info("Finished build task")
+            return_queue.put(True)
 
 
 def main():
