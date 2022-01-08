@@ -1,6 +1,7 @@
 import json
 import logging
 import queue
+from subprocess import run
 import threading
 
 from websocket import WebSocketConnectionClosedException
@@ -15,12 +16,27 @@ from .task_runner import TaskRunner
 logger = logging.getLogger(__name__)
 
 
+class ClientConfig:
+    client_id: str
+    cache_id: str
+    schema_path: str
+
+
 class Client:
-    def __init__(self, config: any, connection: Connection, task_runner: TaskRunner):
+    def __init__(
+        self,
+        config: ClientConfig,
+        connection: Connection,
+        task_runner: TaskRunner,
+        repo_state: dict = None,
+        runner_config: any = None,
+    ):
         self._config = config
         self._connection = connection
+        self._repo_state = repo_state
         self._schema = SchemaLoader.load_schema(config.schema_path)
         self._task_runner = task_runner
+        self._task_runner_config = runner_config
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
@@ -30,8 +46,8 @@ class Client:
         self._build_in_progress_lock = threading.Lock()
 
     def run(self):
-        if self._config.repo_state:
-            repo_state = self._config.repo_state
+        if self._repo_state:
+            repo_state = self._repo_state
         else:
             repo_state = RepoStateParser.parse_repo_state()
 
@@ -96,7 +112,7 @@ class Client:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
 
         task_runner = self._task_runner(self._schema, self._config)
-        task_success = task_runner.run(step_id)
+        task_success = task_runner.run(step_id, self._task_runner_config)
 
         self._build_in_progress = False
 
