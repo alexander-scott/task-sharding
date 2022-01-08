@@ -1,22 +1,23 @@
 import json
+import logging
 import queue
 import threading
 
 from websocket import WebSocketConnectionClosedException
 
 from .connection import Connection
-from .logger import Logger
 from .message_type import MessageType
 from .patchset_complexity import PatchsetComplexity
 from .repo_state_parser import RepoStateParser
 from .schema_loader import SchemaLoader
 
+logger = logging.getLogger(__name__)
+
 
 class Client:
-    def __init__(self, config: any, connection: Connection, logger: Logger, task_type: any):
+    def __init__(self, config: any, connection: Connection, task_type: any):
         self._config = config
         self._connection = connection
-        self._logger = logger
         self._schema = SchemaLoader.load_schema(config.schema_path)
         self._task_type = task_type
         self._dispatch = {
@@ -40,7 +41,7 @@ class Client:
             "total_steps": len(self._schema["steps"]),
         }
 
-        self._logger.print("Sending initial message: " + str(initial_message))
+        logger.info("Sending initial message: " + str(initial_message))
         self._connection.send_message(initial_message)
 
         self._message_listening = True
@@ -50,7 +51,7 @@ class Client:
 
         background_msg_thread.join()
 
-        self._logger.print("Closing websocket")
+        logger.info("Closing websocket")
         self._connection.close_websocket()
 
     def _run_background_message_thread(self):
@@ -70,7 +71,7 @@ class Client:
         # This method is reached when the server sends us a build instruction message.
         # The task itself is given to another thread so that the message receiving
         # thread continues to operate in the background.
-        self._logger.print("Received build instructions message: " + str(msg))
+        logger.info("Received build instructions message: " + str(msg))
         with self._build_in_progress_lock:
             if self._build_in_progress:
                 # TODO: Handle this more gracefully, as this is most likely a server-side problem.
@@ -103,14 +104,14 @@ class Client:
             "step_success": task_success,
         }
 
-        self._logger.print("Sending step complete message: " + str(step_message))
+        logger.info("Sending step complete message: " + str(step_message))
         try:
             self._connection.send_message(step_message)
         except WebSocketConnectionClosedException as e:
-            self._logger.print("Failed to send message to server: " + str(e))
+            logger.error("Failed to send message to server: " + str(e))
             self._message_listening = False
 
     def _process_schema_complete(self, msg: dict):
-        self._logger.print("Received schema complete message: " + str(msg))
+        logger.info("Received schema complete message: " + str(msg))
         self._message_listening = False
         return True

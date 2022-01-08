@@ -1,18 +1,19 @@
 from time import sleep
 
 import json
+import logging
 import queue
 import threading
 import websocket
 
-from .logger import Logger
 
 INITIAL_CONN_TIMEOUT = 5
 
+logger = logging.getLogger(__name__)
+
 
 class Connection:
-    def __init__(self, server_url: str, logger: Logger):
-        self._logger = logger
+    def __init__(self, server_url: str):
         self._received_messages = queue.Queue()
         self._websocket = self._init_connection(server_url)
 
@@ -24,7 +25,7 @@ class Connection:
             self._websocket.close()
 
     def _init_connection(self, server_url: str) -> websocket.WebSocketApp:
-        self._logger.print("Initialising connection...")
+        logger.info("Initialising connection...")
         websocket.enableTrace(False)
         web_socket = websocket.WebSocketApp(
             server_url,
@@ -56,15 +57,15 @@ class Connection:
 
     # WS Thread
     def _on_error(self, web_socket: websocket.WebSocketApp, error):
-        self._logger.print("ERROR: " + str(error))
+        logger.error("ERROR: " + str(error))
 
     # WS Thread
     def _on_close(self, web_socket: websocket.WebSocketApp, close_status_code, close_msg):
-        self._logger.print("### closed ###")
+        logger.info("### closed ###")
 
     # Main Thread
     def _on_open(self, web_socket: websocket.WebSocketApp):
-        self._logger.print("Opened connection")
+        logger.info("Opened connection")
 
     # Main Thread
     def send_message(self, message: dict):
