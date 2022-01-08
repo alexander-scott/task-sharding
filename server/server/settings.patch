@@ -1,5 +1,5 @@
---- /workspaces/task-director/server/server/settings.py	2022-01-05 12:24:37.968308859 +0000
-+++ /workspaces/task-director/server/server/settings_copy.py	2022-01-05 12:25:18.211000000 +0000
+--- /workspaces/task-sharding/server/server/settings.py	2022-01-05 12:24:37.968308859 +0000
++++ /workspaces/task-sharding/server/server/settings_copy.py	2022-01-05 12:25:18.211000000 +0000
 @@ -135,12 +135,12 @@
          #     ],
          # },
@@ -17,4 +17,3 @@
 +        "BACKEND": "channels.layers.InMemoryChannelLayer"
      },
  }
- 
