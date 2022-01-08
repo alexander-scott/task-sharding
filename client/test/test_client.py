@@ -4,32 +4,24 @@ import threading
 import unittest
 
 from src.task_sharding_client.client import Client
+from src.task_sharding_client.connection import Connection
 from src.task_sharding_client.message_type import MessageType
 from src.task_sharding_client.task.default_task import DefaultTask
 
 
-class MockConnection:
-    def __init__(self):
+class MockConnection(Connection):
+    def __init__(self, server_url: str, client_id: str):
         self.sent_messages = queue.Queue()
-        self.received_messages = queue.Queue()
+        super().__init__(server_url, client_id)
 
-    def __enter__(self):
-        return self
+    def _init_connection(self, server_url: str):
+        return None
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        pass
-
-    def send_message(self, msg):
+    def send_message(self, msg: dict):
         self.sent_messages.put(msg)
 
     def get_sent_msg(self):
         return self.sent_messages.get(block=True)
-
-    def close_websocket(self):
-        pass
-
-    def get_latest_message(self, timeout: float) -> dict:
-        return self.received_messages.get(block=False, timeout=timeout)
 
 
 class MockConfiguration:
@@ -52,7 +44,7 @@ class TestClient(unittest.TestCase):
           - schema complete
         """
         config = MockConfiguration("1", "1", "./client/test/test_schema.yaml", "", "test")
-        with MockConnection() as connection:
+        with MockConnection("localhost:8000", "1") as connection:
             client = Client(config, connection, DefaultTask)
             client_thread = threading.Thread(target=client.run)
             client_thread.start()
@@ -61,7 +53,7 @@ class TestClient(unittest.TestCase):
             init_msg = connection.get_sent_msg()
 
             # Mock build instruction message from server
-            connection.received_messages.put(
+            connection._received_messages.put(
                 json.dumps(
                     {
                         "message_type": MessageType.BUILD_INSTRUCTION,
@@ -75,7 +67,7 @@ class TestClient(unittest.TestCase):
             step_complete_msg = connection.get_sent_msg()
 
             # Mock schema complete message from server
-            connection.received_messages.put(
+            connection._received_messages.put(
                 json.dumps(
                     {
                         "message_type": MessageType.SCHEMA_COMPLETE,
