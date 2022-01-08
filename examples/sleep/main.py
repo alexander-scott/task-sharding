@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class SleepTask(TaskRunner):
-    def run(self, step_id: str) -> bool:
+    def run(self, step_id: str, runner_specific_config: any) -> bool:
         logger.info("Starting build task")
 
         sleep_amount = self._schema["steps"][int(step_id)]["task"]

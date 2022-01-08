@@ -25,11 +25,10 @@ class MockConnection(Connection):
 
 
 class MockConfiguration:
-    def __init__(self, client_id, cache_id, schema_path, repo_state, workspace_path):
+    def __init__(self, client_id, cache_id, schema_path, workspace_path):
         self.client_id = client_id
         self.cache_id = cache_id
         self.schema_path = schema_path
-        self.repo_state = repo_state
         self.workspace_path = workspace_path
 
 
@@ -49,9 +48,9 @@ class TestClient(unittest.TestCase):
                 "patchset": "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
             },
         }
-        config = MockConfiguration("1", "1", "./client/test/test_schema.yaml", repo_state, "test")
+        config = MockConfiguration("1", "1", "./client/test/test_schema.yaml", "test")
         with MockConnection("localhost:8000", "1") as connection:
-            client = Client(config, connection, DefaultTask)
+            client = Client(config, connection, DefaultTask, repo_state)
             client_thread = threading.Thread(target=client.run)
             client_thread.start()
 
