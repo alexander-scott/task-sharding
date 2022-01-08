@@ -7,7 +7,6 @@ from websocket import WebSocketConnectionClosedException
 
 from .connection import Connection
 from .message_type import MessageType
-from .patchset_complexity import PatchsetComplexity
 from .repo_state_parser import RepoStateParser
 from .schema_loader import SchemaLoader
 from .task_runner import TaskRunner
@@ -27,13 +26,16 @@ class Client:
         config: ClientConfig,
         connection: Connection,
         task_runner: TaskRunner,
+        complex_patchset: bool = False,
         repo_state: dict = None,
     ):
+        self._complex_patchset = complex_patchset
         self._config = config
         self._connection = connection
-        self._repo_state = repo_state
-        self._schema = SchemaLoader.load_schema(config.schema_path)
         self._task_runner = task_runner
+
+        self._repo_state = repo_state if repo_state else RepoStateParser.parse_repo_state()
+        self._schema = SchemaLoader.load_schema(config.schema_path)
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
@@ -46,8 +48,8 @@ class Client:
         # Send a message to the server about our requirements.
         initial_message = {
             "message_type": MessageType.INIT,
-            "repo_state": self._repo_state if self._repo_state else RepoStateParser.parse_repo_state(),
-            "patchset_complexity": PatchsetComplexity.calculate_patchset_complexity(),
+            "repo_state": self._repo_state,
+            "complex_patchset": self._complex_patchset,
             "cache_id": self._config.cache_id,
             "schema_id": self._schema["name"],
             "total_steps": len(self._schema["steps"]),

@@ -10,7 +10,7 @@ from task_sharding.test.utils import proxy_message_from_channel_to_communicator,
 
 
 def create_client_init_message_default(
-    repo_state=None, patchset_complexity=False, cache_id="1", schema_id="1", total_steps=1
+    repo_state=None, complex_patchset=False, cache_id="1", schema_id="1", total_steps=1
 ) -> dict:
     if not repo_state:
         repo_state = {
@@ -22,9 +22,7 @@ def create_client_init_message_default(
     return {
         "message_type": MessageType.INIT,
         "repo_state": repo_state,
-        "patchset_complexity": {
-            "complex": patchset_complexity,
-        },
+        "complex_patchset": complex_patchset,
         "cache_id": cache_id,
         "schema_id": schema_id,
         "total_steps": total_steps,
@@ -185,7 +183,7 @@ param_list = [
             create_client_init_message_default_with_custom_repo_state(
                 patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
                 additional_patchsets=["5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"],
-                patchset_complexity=True,
+                complex_patchset=True,
             ),
         ],
         [[0], [1]],
@@ -199,7 +197,7 @@ param_list = [
             create_client_init_message_default_with_custom_repo_state(
                 patchset="29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
                 additional_patchsets=["5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71"],
-                patchset_complexity=True,
+                complex_patchset=True,
             ),
             create_client_init_message_default_with_custom_repo_state(
                 patchset="2f05517de6887b51439fc2f62b836f5647978327",
@@ -227,7 +225,7 @@ param_list = [
                     "5bfb44678a27f9bc3b6a96ced8d0b464d7ea9b71",
                     "29fb9sda8yfbd9138239e8qahd8iuia1932wfhas",
                 ],
-                patchset_complexity=True,
+                complex_patchset=True,
             ),
         ],
         [[0, 1], [2]],
