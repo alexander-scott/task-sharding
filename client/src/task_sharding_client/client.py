@@ -1,7 +1,6 @@
 import json
 import logging
 import queue
-from subprocess import run
 import threading
 
 from websocket import WebSocketConnectionClosedException
@@ -29,14 +28,12 @@ class Client:
         connection: Connection,
         task_runner: TaskRunner,
         repo_state: dict = None,
-        runner_config: any = None,
     ):
         self._config = config
         self._connection = connection
         self._repo_state = repo_state
         self._schema = SchemaLoader.load_schema(config.schema_path)
         self._task_runner = task_runner
-        self._task_runner_config = runner_config
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
@@ -112,7 +109,7 @@ class Client:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
 
         task_runner = self._task_runner(self._schema, self._config)
-        task_success = task_runner.run(step_id, self._task_runner_config)
+        task_success = task_runner.run(step_id)
 
         self._build_in_progress = False
 
