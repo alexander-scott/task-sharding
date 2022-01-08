@@ -79,7 +79,7 @@ jobs:
 
   integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     strategy:
       matrix:
         example-name: ["sleep", "bazel"]
