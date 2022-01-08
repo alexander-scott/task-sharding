@@ -15,7 +15,7 @@ pip3 install ../../client/dist/task_sharding_client_alexander_scott-0.0.1-py3-no
 
 pids=""
 for i in `seq 0 2`; do
-   python3 main.py --client_id=$i --cache_id=1 --schema_path=schema.yaml --repo_state_path=. &
+   python3 main.py --client_id=$i --cache_id=1 --schema_path=schema.yaml &
    pids="$pids $!"
    sleep 1
 done

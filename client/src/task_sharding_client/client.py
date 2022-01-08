@@ -30,10 +30,15 @@ class Client:
         self._build_in_progress_lock = threading.Lock()
 
     def run(self):
+        if self._config.repo_state:
+            repo_state = self._config.repo_state
+        else:
+            repo_state = RepoStateParser.parse_repo_state()
+
         # Send a message to the server about our requirements.
         initial_message = {
             "message_type": MessageType.INIT,
-            "repo_state": RepoStateParser.parse_repo_state(self._config.repo_state_path),
+            "repo_state": repo_state,
             "patchset_complexity": PatchsetComplexity.calculate_patchset_complexity(),
             "cache_id": self._config.cache_id,
             "schema_id": self._schema["name"],
