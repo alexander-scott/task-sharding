@@ -13,7 +13,7 @@ class TaskRunner:
 
 
 class DefaultTask(TaskRunner):
-    def run(self, step_id: str, runner_specific_config: any) -> bool:
+    def run(self, step_id: str) -> bool:
         logger.info("Starting task")
         logger.info("Finished task")
         return True

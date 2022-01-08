@@ -4,22 +4,18 @@ import subprocess
 
 from task_sharding_client.arg_parse import parse_input_arguments
 from task_sharding_client.connection import Connection
-from task_sharding_client.client import Client
+from task_sharding_client.client import Client, ClientConfig
 from task_sharding_client.task_runner import TaskRunner
 
 logger = logging.getLogger(__name__)
 
 
-class BazelTaskConfig:
-    workspace_path: str
-
-
 class BazelTask(TaskRunner):
-    def run(self, step_id: str, runner_specific_config: BazelTaskConfig):
+    def run(self, step_id: str):
         logger.info("Starting build task")
 
         target = self._schema["steps"][int(step_id)]["task"]
-        proc = subprocess.Popen(["bazel", "test", target], cwd=runner_specific_config.workspace_path)
+        proc = subprocess.Popen(["bazel", "test", target], cwd=self._config.workspace_path)
         stdout, stderr = proc.communicate()
         exit_code = proc.wait()
 
@@ -31,18 +27,12 @@ class BazelTask(TaskRunner):
         return True
 
 
-def parse_runner_specific_arguments():
+def main():
     parser = argparse.ArgumentParser(description="inputs for script")
     parser.add_argument("--workspace_path", help="Path to workspace", required=False)
-    args = parser.parse_args()
-    return args
-
-
-def main():
-    configuration = parse_input_arguments()
-    runner_specific_arguments = parse_runner_specific_arguments()
+    configuration = parse_input_arguments(parser)
     with Connection("localhost:8000", configuration.client_id) as connection:
-        client = Client(configuration, connection, BazelTask, runner_config=runner_specific_arguments)
+        client = Client(configuration, connection, BazelTask)
         client.run()
 
 
