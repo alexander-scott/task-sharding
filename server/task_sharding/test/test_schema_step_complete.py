@@ -3,20 +3,20 @@ import json
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
 from django.test import TestCase
 
-from task_director.test.defaults import (
+from task_sharding.test.defaults import (
     create_application,
     create_default_client_init_message,
     create_default_build_instruction_message,
     create_default_step_complete_message,
     create_default_schema_complete_message,
 )
-from task_director.test.utils import (
+from task_sharding.test.utils import (
     proxy_message_from_channel_to_communicator,
     send_message_between_communicators,
 )
 
 
-class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
+class TaskShardingTests__SingleConsumerStepComplete(TestCase):
     async def setUpAsync(self):
         application = create_application()
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
@@ -31,7 +31,7 @@ class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
         self,
     ):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
+        GIVEN a freshly instantiated TaskShardingController.
         WHEN a consumer connects and sends an INIT message with a single step,
           AND the server sends a build instruction message to the consumer,
           AND the consumer subsequently sends a successful step complete message.
@@ -64,7 +64,7 @@ class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
         self,
     ):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
+        GIVEN a freshly instantiated TaskShardingController.
         WHEN a consumer connects and sends an INIT message with multiple steps,
           AND the consumer subsequently sends multiple successful step complete messages.
         EXPECT the server to return to the same consumer a schema complete message.
@@ -102,7 +102,7 @@ class TaskDirectorTests__SingleConsumerStepComplete(TestCase):
         await self.tearDownAsync()
 
 
-class TaskDirectorTests__TwoConsumersStepComplete(TestCase):
+class TaskShardingTests__TwoConsumersStepComplete(TestCase):
     async def setUpAsync(self):
         application = create_application()
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
@@ -121,7 +121,7 @@ class TaskDirectorTests__TwoConsumersStepComplete(TestCase):
         self,
     ):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
+        GIVEN a freshly instantiated TaskShardingController.
         WHEN two consumers connect and send an INIT message with the same config and two steps,
           AND the server sends a different build instruction message to each consumer,
           AND the consumers subsequently send a successful step complete message.

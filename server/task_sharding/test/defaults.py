@@ -1,6 +1,6 @@
 from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
-from task_director.routing import channel_name_patterns, websocket_urlpatterns
-from task_director.src.message_type import MessageType
+from task_sharding.routing import channel_name_patterns, websocket_urlpatterns
+from task_sharding.src.message_type import MessageType
 
 
 def create_application():

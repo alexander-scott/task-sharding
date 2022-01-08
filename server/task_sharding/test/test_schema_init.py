@@ -3,10 +3,10 @@ import json
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
 from django.test import TestCase
 
-from task_director.src.message_type import MessageType
+from task_sharding.src.message_type import MessageType
 
-from task_director.test.defaults import create_application
-from task_director.test.utils import proxy_message_from_channel_to_communicator, prompt_response_from_communicator
+from task_sharding.test.defaults import create_application
+from task_sharding.test.utils import proxy_message_from_channel_to_communicator, prompt_response_from_communicator
 
 
 def create_client_init_message_default(
@@ -235,7 +235,7 @@ param_list = [
 ]
 
 
-class TaskDirectorTests__SchemaInstanceInitialisation(TestCase):
+class TaskShardingTests__SchemaInstanceInitialisation(TestCase):
     async def test__schema_instance_count(self):
         for name, consumer_configs, expected_consumer_arrangement in param_list:
             with self.subTest(name):

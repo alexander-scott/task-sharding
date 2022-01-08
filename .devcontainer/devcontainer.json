@@ -1,5 +1,5 @@
 {
-	"name": "Task Director",
+	"name": "Task Sharding",
 	"build": {
 		"dockerfile": "Dockerfile",
 	},

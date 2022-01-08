@@ -3,25 +3,25 @@ import json
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
 from django.test import TestCase
 
-from task_director.test.defaults import (
+from task_sharding.test.defaults import (
     create_application,
     create_default_client_init_message,
     create_default_step_complete_message,
     create_default_schema_complete_message,
 )
-from task_director.test.utils import (
+from task_sharding.test.utils import (
     proxy_message_from_channel_to_communicator,
     prompt_response_from_communicator,
     send_message_between_communicators,
 )
 
 
-class TaskDirectorTests__SchemaCompleted(TestCase):
+class TaskShardingTests__SchemaCompleted(TestCase):
     async def test__when_a_consumer_completes_a_schema__and_another_consumer_completes_a_consecutive_schema__expect_two_schemas_completed(
         self,
     ):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
+        GIVEN a freshly instantiated TaskShardingController.
         WHEN a consumer connects, completes build instructions, and then disconnects,
           AND then a second consumer connects, completes build instructions, and then disconnects.
         EXPECT two schema instances to be successfully completed.

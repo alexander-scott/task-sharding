@@ -2,7 +2,7 @@ import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
-class TaskDirectorConsumer(AsyncJsonWebsocketConsumer):
+class TaskShardingConsumer(AsyncJsonWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         self._schema_instance_id: str = None
         super().__init__(*args, **kwargs)

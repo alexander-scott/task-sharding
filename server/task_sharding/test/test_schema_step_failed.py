@@ -3,20 +3,20 @@ import json
 from channels.testing import ApplicationCommunicator, WebsocketCommunicator
 from django.test import TestCase
 
-from task_director.test.defaults import (
+from task_sharding.test.defaults import (
     create_application,
     create_default_client_init_message,
     create_default_build_instruction_message,
     create_default_step_complete_message,
 )
-from task_director.test.utils import (
+from task_sharding.test.utils import (
     proxy_message_from_channel_to_communicator,
     prompt_response_from_communicator,
     send_message_between_communicators,
 )
 
 
-class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
+class TaskShardingTests__SingleConsumerStepFailed(TestCase):
     async def setUpAsync(self):
         application = create_application()
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
@@ -31,7 +31,7 @@ class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
         self,
     ):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
+        GIVEN a freshly instantiated TaskShardingController.
         WHEN a consumer connects and sends an INIT message with a single step,
           AND the server sends a build instruction message to the consumer,
           AND the consumer subsequently sends a failed step message.
@@ -60,7 +60,7 @@ class TaskDirectorTests__SingleConsumerStepFailed(TestCase):
         await self.tearDownAsync()
 
 
-class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
+class TaskShardingTests__SingleConsumerStepAbandoned(TestCase):
     async def setUpAsync(self):
         application = create_application()
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
@@ -73,7 +73,7 @@ class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
 
     async def test__when_one_consumer_connected__and_single_schema_step_is_abandoned__expect_schema_is_abandoned(self):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
+        GIVEN a freshly instantiated TaskShardingController.
         WHEN a consumer connects and sends an INIT message with a single step,
           AND the server sends a build instruction message to the consumer,
           AND the consumer subsequently disconnects.
@@ -102,7 +102,7 @@ class TaskDirectorTests__SingleConsumerStepAbandoned(TestCase):
         self.assertEqual(0, total_running_schema_instances)
 
 
-class TaskDirectorTests__MultipleConsumerStepAbandoned(TestCase):
+class TaskShardingTests__MultipleConsumerStepAbandoned(TestCase):
     async def setUpAsync(self):
         application = create_application()
         self.controller = ApplicationCommunicator(application, {"type": "channel", "channel": "controller"})
@@ -115,7 +115,7 @@ class TaskDirectorTests__MultipleConsumerStepAbandoned(TestCase):
         self,
     ):
         """
-        GIVEN a freshly instantiated TaskDirectorController.
+        GIVEN a freshly instantiated TaskShardingController.
         WHEN two consumers connect and send an INIT message with the same config and two steps,
           AND the server sends a different build instruction message to each consumer,
           AND one consumer subsequently disconnects during the step.
