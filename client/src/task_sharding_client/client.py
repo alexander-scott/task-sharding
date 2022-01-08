@@ -1,5 +1,6 @@
 import json
 import logging
+import multiprocessing
 import queue
 import threading
 
@@ -92,7 +93,7 @@ class Client:
                 raise Exception("Build is currently in progress, yet we received a build instruction.")
             self._build_in_progress = True
 
-        task_thread = threading.Thread(target=lambda: self._run_build_instructions(msg))
+        task_thread = multiprocessing.Process(target=lambda: self._run_build_instructions(msg))
         task_thread.daemon = True
         task_thread.start()
         return True
