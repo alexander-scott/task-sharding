@@ -1,10 +1,23 @@
 import logging
+from time import sleep
 
 from task_sharding_client.arg_parse import parse_input_arguments
 from task_sharding_client.connection import Connection
 from task_sharding_client.client import Client
+from task_sharding_client.task_runner import TaskRunner
 
-from sleep_task import SleepTask
+logger = logging.getLogger(__name__)
+
+
+class SleepTask(TaskRunner):
+    def run(self, step_id: str) -> bool:
+        logger.info("Starting build task")
+
+        sleep_amount = self._schema["steps"][int(step_id)]["task"]
+        sleep(sleep_amount)
+
+        logger.info("Finished build task")
+        return True
 
 
 def main():
