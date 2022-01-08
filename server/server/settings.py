@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "channels",
-    "task_director",
+    "task_sharding",
 ]
 
 MIDDLEWARE = [

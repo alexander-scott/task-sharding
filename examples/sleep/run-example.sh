@@ -1,9 +1,6 @@
 #!/bin/bash
 
 python3 server/manage.py runserver &
-
-sleep 1
-
 python3 server/manage.py runworker controller &
 
 sleep 1

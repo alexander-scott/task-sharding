@@ -42,7 +42,7 @@ jobs:
           patch < server/server/settings.patch server/server/settings.py
       - name: Run unit tests
         run: |
-          python server/manage.py test task_director.test
+          python server/manage.py test task_sharding.test
           python -m unittest discover client
 
   coverage:
@@ -66,7 +66,7 @@ jobs:
       - name: Generate Coverage Report
         run: |
           pip install coverage
-          coverage run --source='.' server/manage.py test task_director.test
+          coverage run --source='.' server/manage.py test task_sharding.test
           coverage xml -o server_coverage.xml
           coverage run --source='.' -m unittest discover client
           coverage xml -o client_coverage.xml

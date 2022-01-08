@@ -2,8 +2,8 @@ import logging
 import threading
 
 from channels.layers import get_channel_layer
-from task_director.src.message_type import MessageType
-from task_director.src.schema_details import SchemaDetails
+from task_sharding.src.message_type import MessageType
+from task_sharding.src.schema_details import SchemaDetails
 
 logger = logging.getLogger(__name__)
 

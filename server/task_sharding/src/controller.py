@@ -3,8 +3,8 @@ import logging
 
 from channels.consumer import AsyncConsumer
 
-from task_director.src.schema_details import SchemaDetails
-from task_director.src.schema_instance import SchemaInstance
+from task_sharding.src.schema_details import SchemaDetails
+from task_sharding.src.schema_instance import SchemaInstance
 
 logger = logging.getLogger(__name__)
 
