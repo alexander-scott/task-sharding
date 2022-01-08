@@ -78,5 +78,5 @@ class Connection:
             self._websocket.close()
 
     # Main Thread
-    def get_latest_message(self, timeout: float) -> dict:
-        return self._received_messages.get(block=False, timeout=timeout)
+    def get_latest_message(self) -> dict:
+        return self._received_messages.get(block=True)
