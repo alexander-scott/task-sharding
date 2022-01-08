@@ -9,6 +9,10 @@
 		"git.confirmSync": false,
 		"git.autofetch": true,
 		"bazel.buildifierFixOnFormat": true,
+		"workbench.iconTheme": "vscode-icons",
+		"python.formatting.blackArgs": [
+			"--line-length=120"
+		]
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [

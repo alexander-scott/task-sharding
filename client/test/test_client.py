@@ -6,7 +6,7 @@ import unittest
 from src.task_sharding_client.client import Client
 from src.task_sharding_client.connection import Connection
 from src.task_sharding_client.message_type import MessageType
-from src.task_sharding_client.task.default_task import DefaultTask
+from src.task_sharding_client.task_runner import DefaultTask
 
 
 class MockConnection(Connection):

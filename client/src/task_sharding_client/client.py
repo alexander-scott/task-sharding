@@ -10,22 +10,21 @@ from .message_type import MessageType
 from .patchset_complexity import PatchsetComplexity
 from .repo_state_parser import RepoStateParser
 from .schema_loader import SchemaLoader
+from .task_runner import TaskRunner
 
 logger = logging.getLogger(__name__)
 
 
 class Client:
-    def __init__(self, config: any, connection: Connection, task_type: any):
+    def __init__(self, config: any, connection: Connection, task_runner: TaskRunner):
         self._config = config
         self._connection = connection
         self._schema = SchemaLoader.load_schema(config.schema_path)
-        self._task_type = task_type
+        self._task_runner = task_runner
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
         }
-        # We do not need a lock when reading/writing boolean values as they are thread-safe.
-        # https://stackoverflow.com/a/9620974
         self._message_listening = False
         self._build_in_progress = False
         self._build_in_progress_lock = threading.Lock()
@@ -91,9 +90,8 @@ class Client:
         if not self._build_in_progress:
             raise Exception("Building is about to begin, yet the build_in_progress variable is not set to true.")
 
-        task = self._task_type()
-        task.load_schema(self._schema, step_id)
-        task_success = task.run(self._config.workspace_path)
+        task_runner = self._task_runner(self._schema, self._config)
+        task_success = task_runner.run(step_id)
 
         self._build_in_progress = False
 
