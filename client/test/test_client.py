@@ -4,7 +4,6 @@ import threading
 import unittest
 
 from src.task_sharding_client.client import Client
-from src.task_sharding_client.logger import Logger
 from src.task_sharding_client.message_type import MessageType
 from src.task_sharding_client.task.default_task import DefaultTask
 
@@ -43,9 +42,6 @@ class MockConfiguration:
 
 
 class TestClient(unittest.TestCase):
-    def setUp(self):
-        self.logger = Logger("1")
-
     def test_client_lifecycle(self):
         """
         GIVEN a client connected to the server with a designated schema.
@@ -57,7 +53,7 @@ class TestClient(unittest.TestCase):
         """
         config = MockConfiguration("1", "1", "./client/test/test_schema.yaml", "", "test")
         with MockConnection() as connection:
-            client = Client(config, connection, self.logger, DefaultTask)
+            client = Client(config, connection, DefaultTask)
             client_thread = threading.Thread(target=client.run)
             client_thread.start()
 
