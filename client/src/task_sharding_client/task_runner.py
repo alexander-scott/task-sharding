@@ -8,7 +8,7 @@ class TaskRunner:
         self._config = config
         self._schema = schema
 
-    def run(self, step_id: str, return_queue):
+    def run(self, step_id: str) -> bool:
         raise NotImplementedError()
 
     def abort(self):
@@ -16,7 +16,7 @@ class TaskRunner:
 
 
 class DefaultTask(TaskRunner):
-    def run(self, step_id: str, return_queue):
+    def run(self, step_id: str) -> bool:
         logger.info("Starting task: " + step_id)
         logger.info("Finished task: " + step_id)
-        return_queue.put(True)
+        return True

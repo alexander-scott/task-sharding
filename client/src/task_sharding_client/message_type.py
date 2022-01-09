@@ -7,3 +7,4 @@ class MessageType(int, enum.Enum):
     STEP_COMPLETE = 3
     SCHEMA_COMPLETE = 4
     ABORT_STEP = 5
+    WEBSOCKET_CLOSED = 6
