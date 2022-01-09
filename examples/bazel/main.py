@@ -15,12 +15,6 @@ class BazelTask(TaskRunner):
         super().__init__(schema, config)
         self._process = None
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.abort()
-
     def run(self, step_id: str) -> bool:
         logger.info("Starting build task")
 
