@@ -41,15 +41,16 @@ class Client:
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
             MessageType.ABORT_STEP: self._process_abort_step,
+            MessageType.WEBSOCKET_CLOSED: self._process_websocket_closed,
         }
         self._message_listening = False
-        self._build_in_progress_lock = threading.Lock()
+        self._task_in_progress_lock = threading.Lock()
 
         # This object manager here allows us to share instances of TaskRunner across processes
         BaseManager.register("TaskRunner", task_runner)
         self._object_manager = BaseManager()
         self._object_manager.start()
-        self._task_instance: TaskRunner = None
+        self._task_runner_instance: TaskRunner = None
 
     def run(self):
         # Send a message to the server about our requirements.
@@ -95,8 +96,11 @@ class Client:
 
         logger.info("Received build instructions message: " + str(msg))
 
-        # Abort the current step if one is currently running
-        self._process_abort_step()
+        # Create a new task runner instance
+        with self._task_in_progress_lock:
+            if self._task_runner_instance:
+                raise Exception("Instance is running when it shouldn't be!")
+            self._task_runner_instance = self._object_manager.TaskRunner(self._schema, self._config)
 
         # Spawn a new TASK THREAD that processes the build instructions
         task_thread = threading.Thread(target=lambda: self._run_build_instructions(msg))
@@ -104,26 +108,19 @@ class Client:
         task_thread.start()
 
     def _run_build_instructions(self, msg: dict):
-        # This method executes a build instruction task and sends a message to the
-        # server when it is complete.
+        """
+        This method starts the task runner and passes to it a step ID..
+        """
+
         step_id = msg["step_id"]
 
-        self._task_instance = self._object_manager.TaskRunner(self._schema, self._config)
-        m = multiprocessing.Manager()
-        return_value = m.Queue()
-        task_process = multiprocessing.Process(
-            target=self._task_instance.run,
-            args=(
-                step_id,
-                return_value,
-            ),
-        )
-        task_process.start()
+        # Run the task (BLOCKING)
+        return_value = self._task_runner_instance.run(step_id)
 
-        # Wait for the task runner to finish
-        task_process.join()
+        # Setting this to None signifies that the task has finished
+        self._task_runner_instance = None
 
-        if return_value.empty():
+        if not return_value:
             logger.warning("Process did not return any value")
             return
 
@@ -131,7 +128,7 @@ class Client:
             "message_type": MessageType.STEP_COMPLETE,
             "schema_id": self._schema["name"],
             "step_id": step_id,
-            "step_success": return_value.get(),
+            "step_success": return_value,
         }
 
         logger.info("Sending step complete message: " + str(step_message))
@@ -146,8 +143,12 @@ class Client:
         self._message_listening = False
 
     def _process_abort_step(self, msg: dict):
-        with self._build_in_progress_lock:
-            if self._task_instance:
+        with self._task_in_progress_lock:
+            if self._task_runner_instance:
                 logger.info("Aborting current step")
-                self._task_instance.abort()
-                self._task_instance = None
+                self._task_runner_instance.abort()
+                self._task_runner_instance = None
+
+    def _process_websocket_closed(self, msg: dict):
+        self._process_abort_step(msg)
+        self._message_listening = False

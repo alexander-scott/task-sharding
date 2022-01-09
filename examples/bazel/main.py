@@ -21,7 +21,7 @@ class BazelTask(TaskRunner):
     def __exit__(self, exc_type, exc_value, traceback):
         self.abort()
 
-    def run(self, step_id: str, return_queue):
+    def run(self, step_id: str) -> bool:
         logger.info("Starting build task")
 
         target = self._schema["steps"][int(step_id)]["task"]
@@ -31,10 +31,10 @@ class BazelTask(TaskRunner):
 
         if exit_code != 0:
             logger.error("Build did not complete successfully: " + str(stderr) + " -- " + str(stdout))
-            return_queue.put(False)
+            return False
         else:
             logger.info("Finished build task")
-            return_queue.put(True)
+            return True
 
     def abort(self):
         if self._process:
