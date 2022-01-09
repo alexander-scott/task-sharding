@@ -1,6 +1,5 @@
 import json
 import logging
-import multiprocessing
 from multiprocessing.managers import BaseManager
 import queue
 import threading
@@ -27,7 +26,7 @@ class Client:
         self,
         config: ClientConfig,
         connection: Connection,
-        task_runner: TaskRunner,
+        task_runner_type: TaskRunner,
         complex_patchset: bool = False,
         repo_state: dict = None,
     ):
@@ -47,7 +46,7 @@ class Client:
         self._task_in_progress_lock = threading.Lock()
 
         # This object manager here allows us to share instances of TaskRunner across processes
-        BaseManager.register("TaskRunner", task_runner)
+        BaseManager.register("TaskRunner", task_runner_type)
         self._object_manager = BaseManager()
         self._object_manager.start()
         self._task_runner_instance: TaskRunner = None
@@ -109,7 +108,7 @@ class Client:
 
     def _run_build_instructions(self, msg: dict):
         """
-        This method starts the task runner and passes to it a step ID..
+        This method starts the task runner and passes to it a step ID.
         """
 
         step_id = msg["step_id"]
