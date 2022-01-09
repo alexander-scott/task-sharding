@@ -11,13 +11,14 @@ logger = logging.getLogger(__name__)
 class SchemaInstance:
     def __init__(self, schema_details: SchemaDetails):
         self.schema_details = schema_details
-
+        self._to_do_steps = list(range(0, self.schema_details.total_steps))
         self._channel_layer = get_channel_layer()
+
         self._registered_consumers = set()
         self._in_progress_consumers = {}
-        self._lock = threading.Lock()
         self._repo_states = {}
-        self._to_do_steps = list(range(0, self.schema_details.total_steps))
+        self._consumer_lock = threading.Lock()
+
         self._dispatch = {
             MessageType.INIT: self._send_build_instructions,
             MessageType.STEP_COMPLETE: self._receive_step_completed,
@@ -25,18 +26,21 @@ class SchemaInstance:
 
     def register_consumer(self, consumer_id: str, repo_state: dict):
         self._print_with_prefix("Registering consumer " + consumer_id)
-        self._registered_consumers.add(consumer_id)
-        self._repo_states[consumer_id] = repo_state
+        with self._consumer_lock:
+            self._registered_consumers.add(consumer_id)
+            self._repo_states[consumer_id] = repo_state
 
     def deregister_consumer(self, consumer_id: str):
-        if consumer_id in self._registered_consumers:
-            self._registered_consumers.remove(consumer_id)
-        if consumer_id in self._in_progress_consumers:
-            step_id = self._in_progress_consumers[consumer_id]
-            del self._in_progress_consumers[consumer_id]
-            self._to_do_steps.append(int(step_id))
-        if consumer_id in self._repo_states:
-            del self._repo_states[consumer_id]
+        with self._consumer_lock:
+            if consumer_id in self._registered_consumers:
+                self._registered_consumers.remove(consumer_id)
+            if consumer_id in self._in_progress_consumers:
+                step_id = self._in_progress_consumers[consumer_id]
+                del self._in_progress_consumers[consumer_id]
+                self._to_do_steps.append(int(step_id))
+                self._print_with_prefix("Unassigning " + step_id + " from consumer " + consumer_id)
+            if consumer_id in self._repo_states:
+                del self._repo_states[consumer_id]
 
     def is_consumer_registered(self, uuid: str) -> bool:
         return uuid in self._registered_consumers
@@ -86,7 +90,7 @@ class SchemaInstance:
         await self._dispatch.get(msg["message_type"])(msg=msg, consumer_id=consumer_id)
 
     async def _send_build_instructions(self, msg: dict, consumer_id: str):
-        with self._lock:
+        with self._consumer_lock:
             if len(self._to_do_steps) > 0:
                 step = self._to_do_steps.pop()
                 self._in_progress_consumers[consumer_id] = step
@@ -104,7 +108,7 @@ class SchemaInstance:
                 )
 
     async def _receive_step_completed(self, msg: dict, consumer_id: str):
-        with self._lock:
+        with self._consumer_lock:
             step_id = msg["step_id"]
             step_success = msg["step_success"]
             del self._in_progress_consumers[consumer_id]
@@ -129,7 +133,7 @@ class SchemaInstance:
             await self._send_schema_complete()
 
     async def _send_schema_complete(self):
-        with self._lock:
+        with self._consumer_lock:
             steps_not_started = len(self._to_do_steps)
             steps_in_progress = len(self._in_progress_consumers)
 
