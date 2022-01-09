@@ -1,4 +1,5 @@
 import logging
+import sys
 from time import sleep
 
 from task_sharding_client.arg_parse import parse_input_arguments
@@ -10,14 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 class SleepTask(TaskRunner):
-    def run(self, step_id: str) -> bool:
+    def run(self, step_id: str) -> int:
         logger.info("Starting build task")
 
         sleep_amount = self._schema["steps"][int(step_id)]["task"]
         sleep(sleep_amount)
 
         logger.info("Finished build task")
-        return True
+        return 0
 
     def abort(self):
         # TODO: Add some logic to abort a running sleep
@@ -28,7 +29,7 @@ def main():
     configuration = parse_input_arguments()
     with Connection("localhost:8000", configuration.client_id) as connection:
         client = Client(configuration, connection, SleepTask)
-        client.run()
+        sys.exit(client.run())
 
 
 if __name__ == "__main__":
