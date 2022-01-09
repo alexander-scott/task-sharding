@@ -38,7 +38,7 @@ class SchemaInstance:
                 step_id = self._in_progress_consumers[consumer_id]
                 del self._in_progress_consumers[consumer_id]
                 self._to_do_steps.append(step_id)
-                self._print_with_prefix("Unassigning " + str(step_id) + " from consumer " + consumer_id)
+                self._print_with_prefix("Unassigning step ID " + str(step_id) + " from consumer " + consumer_id)
             if consumer_id in self._repo_states:
                 del self._repo_states[consumer_id]
 

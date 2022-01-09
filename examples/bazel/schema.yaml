@@ -5,4 +5,3 @@ steps:
   - task: //:test_my_script_2
   - task: //:test_my_script_3
   - task: //:test_my_script_4
-  - task: //:test_my_script_11
