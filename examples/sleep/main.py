@@ -19,6 +19,10 @@ class SleepTask(TaskRunner):
         logger.info("Finished build task")
         return_queue.put(True)
 
+    def abort(self):
+        # TODO: Add some logic to abort a running sleep
+        pass
+
 
 def main():
     configuration = parse_input_arguments()
