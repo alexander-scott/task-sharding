@@ -50,8 +50,9 @@ class Client:
         self._object_manager = BaseManager()
         self._object_manager.start()
         self._task_runner_instance: TaskRunner = None
+        self._task_return_code: int = 1
 
-    def run(self):
+    def run(self) -> int:
         # Send a message to the server about our requirements.
         initial_message = {
             "message_type": MessageType.INIT,
@@ -77,6 +78,8 @@ class Client:
 
         logger.info("Closing websocket")
         self._connection.close_websocket()
+
+        return self._task_return_code
 
     def _process_message(self, msg: dict) -> bool:
         """
@@ -114,20 +117,16 @@ class Client:
         step_id = msg["step_id"]
 
         # Run the task (BLOCKING)
-        return_value = self._task_runner_instance.run(step_id)
+        self._task_return_code = self._task_runner_instance.run(step_id)
 
         # Setting this to None signifies that the task has finished
         self._task_runner_instance = None
-
-        if not return_value:
-            logger.warning("Process did not return any value")
-            return
 
         step_message = {
             "message_type": MessageType.STEP_COMPLETE,
             "schema_id": self._schema["name"],
             "step_id": step_id,
-            "step_success": return_value,
+            "step_success": True if self._task_return_code == 0 else False,
         }
 
         logger.info("Sending step complete message: " + str(step_message))
@@ -135,6 +134,9 @@ class Client:
             self._connection.send_message(step_message)
         except WebSocketConnectionClosedException as e:
             logger.error("Failed to send message to server: " + str(e))
+            self._message_listening = False
+
+        if self._task_return_code != 0:
             self._message_listening = False
 
     def _process_schema_complete(self, msg: dict):

@@ -1,6 +1,7 @@
 import argparse
 import logging
 import subprocess
+import sys
 
 from task_sharding_client.arg_parse import parse_input_arguments
 from task_sharding_client.connection import Connection
@@ -15,7 +16,7 @@ class BazelTask(TaskRunner):
         super().__init__(schema, config)
         self._process = None
 
-    def run(self, step_id: str) -> bool:
+    def run(self, step_id: str) -> int:
         logger.info("Starting build task")
 
         target = self._schema["steps"][int(step_id)]["task"]
@@ -25,10 +26,10 @@ class BazelTask(TaskRunner):
 
         if exit_code != 0:
             logger.error("Build did not complete successfully: " + str(stderr) + " -- " + str(stdout))
-            return False
         else:
             logger.info("Finished build task")
-            return True
+
+        return exit_code
 
     def abort(self):
         if self._process:
@@ -42,7 +43,7 @@ def main():
 
     with Connection("localhost:8000", configuration.client_id) as connection:
         client = Client(configuration, connection, BazelTask)
-        client.run()
+        sys.exit(client.run())
 
 
 if __name__ == "__main__":
