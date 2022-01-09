@@ -1,5 +1,4 @@
 name: bazel
-task_type: BazelTask
 steps:
   - task: //:test_my_script_1
   - task: //:test_my_script_2

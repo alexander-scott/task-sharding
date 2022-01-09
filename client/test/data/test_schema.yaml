@@ -1,5 +1,4 @@
-name: sleep
-task_type: SleepTask
+name: mock_schema
 steps:
   - task: 2
   - task: 3

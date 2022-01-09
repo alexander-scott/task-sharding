@@ -1,8 +1,3 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
-
 class TaskRunner:
     def __init__(self, schema: dict, config: any):
         self._config = config
@@ -19,13 +14,3 @@ class TaskRunner:
 
     def abort(self):
         raise NotImplementedError()
-
-
-class DefaultTask(TaskRunner):
-    def run(self, step_id: str) -> int:
-        logger.info("Starting task: " + step_id)
-        logger.info("Finished task: " + step_id)
-        return 0
-
-    def abort(self):
-        pass

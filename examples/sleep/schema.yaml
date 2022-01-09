@@ -1,5 +1,4 @@
 name: sleep
-task_type: SleepTask
 steps:
   - task: 2
   - task: 3
