@@ -15,6 +15,13 @@ class BazelTask(TaskRunner):
         super().__init__(schema, config)
         self.proc = None
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.proc:
+            self.proc.terminate()
+
     def run(self, step_id: str, return_queue):
         logger.info("Starting build task")
 
@@ -24,7 +31,7 @@ class BazelTask(TaskRunner):
         exit_code = self.proc.wait()
 
         if exit_code != 0:
-            logger.error("Build failure: " + str(stderr))
+            logger.error("Build did not complete successfully: " + str(stderr) + " -- " + str(stdout))
             return_queue.put(False)
         else:
             logger.info("Finished build task")
