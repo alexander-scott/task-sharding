@@ -2,6 +2,7 @@ import json
 import logging
 import multiprocessing
 from multiprocessing.context import Process
+from multiprocessing.managers import BaseManager
 import queue
 import threading
 
@@ -45,6 +46,9 @@ class Client:
         }
         self._message_listening = False
         self._build_in_progress_lock = threading.Lock()
+        BaseManager.register("TaskRunner", self._task_runner)
+        self._object_manager = BaseManager()
+        self._object_manager.start()
         self.task_instance = None
 
     def run(self):
@@ -104,8 +108,9 @@ class Client:
         # server when it is complete.
         step_id = msg["step_id"]
 
-        self.task_instance = self._task_runner(self._schema, self._config)
-        return_value = multiprocessing.SimpleQueue()
+        self.task_instance = self._object_manager.TaskRunner(self._schema, self._config)
+        m = multiprocessing.Manager()
+        return_value = m.Queue()
         task_thread = multiprocessing.Process(
             target=self.task_instance.run,
             args=(
