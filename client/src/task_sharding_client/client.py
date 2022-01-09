@@ -41,10 +41,11 @@ class Client:
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
+            MessageType.ABORT_STEP: self._process_abort_step,
         }
         self._message_listening = False
         self._build_in_progress_lock = threading.Lock()
-        self._task_thread: Process = None
+        self.task_instance = None
 
     def run(self):
         # Send a message to the server about our requirements.
@@ -89,9 +90,9 @@ class Client:
         # thread continues to operate in the background.
         logger.info("Received build instructions message: " + str(msg))
         with self._build_in_progress_lock:
-            if self._task_thread:
-                self._task_thread.terminate()
-                self._task_thread = None
+            if self.task_instance:
+                self.task_instance.abort()
+                self.task_instance = None
 
         task_thread = threading.Thread(target=lambda: self._run_build_instructions(msg))
         task_thread.daemon = True
@@ -103,17 +104,17 @@ class Client:
         # server when it is complete.
         step_id = msg["step_id"]
 
-        task_runner = self._task_runner(self._schema, self._config)
+        self.task_instance = self._task_runner(self._schema, self._config)
         return_value = multiprocessing.SimpleQueue()
-        self._task_thread = multiprocessing.Process(
-            target=task_runner.run,
+        task_thread = multiprocessing.Process(
+            target=self.task_instance.run,
             args=(
                 step_id,
                 return_value,
             ),
         )
-        self._task_thread.start()
-        self._task_thread.join()
+        task_thread.start()
+        task_thread.join()
 
         if return_value.empty():
             logger.warning("Process did not return any value")
@@ -137,3 +138,11 @@ class Client:
         logger.info("Received schema complete message: " + str(msg))
         self._message_listening = False
         return True
+
+    def _process_abort_step(self, msg: dict):
+        with self._build_in_progress_lock:
+            logger.info("Received step abort message")
+            if self.task_instance:
+                logger.info("Aborting current step")
+                self.task_instance.abort()
+                self.task_instance = None
