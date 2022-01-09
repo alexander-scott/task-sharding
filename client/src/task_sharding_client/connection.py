@@ -6,6 +6,8 @@ import queue
 import threading
 import websocket
 
+from .message_type import MessageType
+
 
 INITIAL_CONN_TIMEOUT = 5
 URL_FORMAT = "ws://{}/ws/api/1/{}/"
@@ -59,6 +61,7 @@ class Connection:
     # WS Thread
     def _on_error(self, web_socket: websocket.WebSocketApp, error):
         logger.error("ERROR: " + str(error))
+        self._received_messages.put(json.dumps({"message_type": MessageType.ABORT_STEP}))
 
     # WS Thread
     def _on_close(self, web_socket: websocket.WebSocketApp, close_status_code, close_msg):
@@ -79,4 +82,4 @@ class Connection:
 
     # Main Thread
     def get_latest_message(self) -> dict:
-        return self._received_messages.get(block=True)
+        return self._received_messages.get(block=False, timeout=1)

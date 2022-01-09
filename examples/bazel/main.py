@@ -11,13 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 class BazelTask(TaskRunner):
+    def __init__(self, schema: dict, config: any):
+        super().__init__(schema, config)
+        self.proc = None
+
     def run(self, step_id: str, return_queue):
         logger.info("Starting build task")
 
         target = self._schema["steps"][int(step_id)]["task"]
-        proc = subprocess.Popen(["bazel", "test", target], cwd=self._config.workspace_path)
-        stdout, stderr = proc.communicate()
-        exit_code = proc.wait()
+        self.proc = subprocess.Popen(["bazel", "test", target], cwd=self._config.workspace_path)
+        stdout, stderr = self.proc.communicate()
+        exit_code = self.proc.wait()
 
         if exit_code != 0:
             logger.error("Build failure: " + str(stderr))
@@ -25,6 +29,10 @@ class BazelTask(TaskRunner):
         else:
             logger.info("Finished build task")
             return_queue.put(True)
+
+    def abort(self):
+        if self.proc:
+            self.proc.terminate()
 
 
 def main():

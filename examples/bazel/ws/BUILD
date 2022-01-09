@@ -4,7 +4,7 @@ target_gen(
     name = "test_my_script",
     srcs = ["test_my_script.py"],
     main = "test_my_script.py",
-    total_targets = 5,
+    total_targets = 10,
 )
 
 py_test(

@@ -11,6 +11,9 @@ class TaskRunner:
     def run(self, step_id: str, return_queue):
         raise NotImplementedError()
 
+    def abort(self):
+        raise NotImplementedError()
+
 
 class DefaultTask(TaskRunner):
     def run(self, step_id: str, return_queue):
