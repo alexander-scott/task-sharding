@@ -29,8 +29,8 @@ class MockConnection(Connection):
 
 class MockSuccessfulTaskRunner(TaskRunner):
     def run(self, step_id: str) -> int:
-        logger.info("Starting task: " + step_id)
-        logger.info("Finished task: " + step_id)
+        logger.info("Starting task: %s", step_id)
+        logger.info("Finished task: %s", step_id)
         return 0
 
     def abort(self):
@@ -39,8 +39,8 @@ class MockSuccessfulTaskRunner(TaskRunner):
 
 class MockFailedTaskRunner(TaskRunner):
     def run(self, step_id: str) -> int:
-        logger.info("Starting task: " + step_id)
-        logger.info("Finished task: " + step_id)
+        logger.info("Starting task: %s", step_id)
+        logger.info("Finished task: %s", step_id)
         return 1
 
     def abort(self):

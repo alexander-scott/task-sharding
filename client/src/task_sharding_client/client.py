@@ -63,7 +63,7 @@ class Client:
             "total_steps": len(self._schema["steps"]),
         }
 
-        logger.info("Sending initial message: " + str(initial_message))
+        logger.info("Sending initial message: %s", str(initial_message))
         self._connection.send_message(initial_message)
 
         self._message_listening = True
@@ -96,7 +96,7 @@ class Client:
         thread continues to operate in the background.
         """
 
-        logger.info("Received build instructions message: " + str(msg))
+        logger.info("Received build instructions message: %s", str(msg))
 
         # Create a new task runner instance
         with self._task_in_progress_lock:
@@ -126,21 +126,21 @@ class Client:
             "message_type": MessageType.STEP_COMPLETE,
             "schema_id": self._schema["name"],
             "step_id": step_id,
-            "step_success": True if self._task_return_code == 0 else False,
+            "step_success": bool(True if self._task_return_code == 0 else False),
         }
 
-        logger.info("Sending step complete message: " + str(step_message))
+        logger.info("Sending step complete message: %s", str(step_message))
         try:
             self._connection.send_message(step_message)
-        except WebSocketConnectionClosedException as e:
-            logger.error("Failed to send message to server: " + str(e))
+        except WebSocketConnectionClosedException as exception:
+            logger.error("Failed to send message to server: %s", str(exception))
             self._message_listening = False
 
         if self._task_return_code != 0:
             self._message_listening = False
 
     def _process_schema_complete(self, msg: dict):
-        logger.info("Received schema complete message: " + str(msg))
+        logger.info("Received schema complete message: %s", str(msg))
         self._message_listening = False
 
     def _process_abort_step(self, msg: dict):

@@ -141,12 +141,12 @@ class Controller(AsyncConsumer):
             channel_name, {"type": channel_name, "total_running_schema_instances": total_running_schema_instances}
         )
 
-    def get_schema_instance_id_for_client_id(self, id: str) -> str:
-        consumer_id = self._client_id_to_consumer_id_map[id]
+    def get_schema_instance_id_for_client_id(self, client_id: str) -> str:
+        consumer_id = self._client_id_to_consumer_id_map[client_id]
         return self._consumer_id_to_instance_map[consumer_id].schema_details.id
 
     async def get_schema_instance_id_for_client_id_msg(self, message: dict) -> str:
         channel_name = message["channel_name"]
-        id = message["id"]
-        schema_instance_id = self.get_schema_instance_id_for_client_id(id)
+        client_id = message["id"]
+        schema_instance_id = self.get_schema_instance_id_for_client_id(client_id)
         await self.channel_layer.send(channel_name, {"type": channel_name, "schema_instance_id": schema_instance_id})
