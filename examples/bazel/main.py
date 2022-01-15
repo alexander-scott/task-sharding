@@ -25,7 +25,7 @@ class BazelTask(TaskRunner):
         exit_code = self._process.wait()
 
         if exit_code != 0:
-            logger.error("Build did not complete successfully: " + str(stderr) + " -- " + str(stdout))
+            logger.error("Build did not complete successfully: %s -- %s", str(stderr), str(stdout))
         else:
             logger.info("Finished build task")
 

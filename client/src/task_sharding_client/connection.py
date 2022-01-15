@@ -60,7 +60,7 @@ class Connection:
 
     # WS Thread
     def _on_error(self, web_socket: websocket.WebSocketApp, error):
-        logger.error("ERROR: " + str(error))
+        logger.error("ERROR: %s", str(error))
 
     # WS Thread
     def _on_close(self, web_socket: websocket.WebSocketApp, close_status_code, close_msg):

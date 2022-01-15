@@ -27,7 +27,7 @@ async def prompt_response_from_communicator(
     message["channel_name"] = channel_layer
     await communicator.send_input(message)
     instances_created_msg = await get_channel_layer().receive(channel_layer)
+
     if response_key:
         return instances_created_msg[response_key]
-    else:
-        return instances_created_msg
+    return instances_created_msg
