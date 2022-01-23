@@ -7,7 +7,7 @@ from task_sharding.test.defaults import (
     create_application,
     create_default_client_init_message,
     create_default_build_instruction_message,
-    create_default_step_complete_message,
+    create_default_task_complete_message,
 )
 from task_sharding.test.utils import (
     proxy_message_from_channel_to_communicator,
@@ -49,9 +49,9 @@ class TaskShardingTests__SingleConsumerStepFailed(TestCase):
         actual_build_instruction_msg = await self.consumer.receive_from()
         self.assertDictEqual(expected_build_instruction_msg, json.loads(actual_build_instruction_msg))
 
-        # Send step failed to controller
-        client_step_complete_msg = create_default_step_complete_message(0, False)
-        await send_message_between_communicators(self.consumer, self.controller, client_step_complete_msg)
+        # Send task failed to controller
+        client_task_complete_msg = create_default_task_complete_message(0, False)
+        await send_message_between_communicators(self.consumer, self.controller, client_task_complete_msg)
 
         # Assert the controller sent the correct build instruction to the consumer
         actual_build_instruction_msg = await self.consumer.receive_from()
@@ -145,9 +145,9 @@ class TaskShardingTests__MultipleConsumerStepAbandoned(TestCase):
         await self.consumer1.disconnect()
         await proxy_message_from_channel_to_communicator("controller", self.controller)
 
-        # Send step complete message to controller
-        step_2_step_complete_msg = create_default_step_complete_message()
-        await send_message_between_communicators(self.consumer2, self.controller, step_2_step_complete_msg)
+        # Send task complete message to controller
+        step_2_task_complete_msg = create_default_task_complete_message()
+        await send_message_between_communicators(self.consumer2, self.controller, step_2_task_complete_msg)
 
         # Assert the controller sent the correct build instruction to the consumer
         actual_build_instruction_msg = await self.consumer2.receive_from()

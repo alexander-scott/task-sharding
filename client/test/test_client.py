@@ -74,7 +74,7 @@ class TestClient(unittest.TestCase):
         GIVEN a client connected to the server with a designated schema.
         WHEN the client receives build instructions,
           AND subsequently successfully completes those build instructions.
-        EXPECT client to send a successful step complete message
+        EXPECT client to send a successful task complete message
           AND receive a schema complete message and disconnect.
         """
         repo_state = {
@@ -103,8 +103,8 @@ class TestClient(unittest.TestCase):
                 )
             )
 
-            # Get step_complete message from client (BLOCKING)
-            step_complete_msg = connection.get_sent_msg()
+            # Get task_complete message from client (BLOCKING)
+            task_complete_msg = connection.get_sent_msg()
 
             # Mock schema complete message from server
             connection._received_messages.put(
@@ -139,7 +139,7 @@ class TestClient(unittest.TestCase):
                     "task_id": "0",
                     "task_success": True,
                 },
-                step_complete_msg,
+                task_complete_msg,
             )
 
     def test__when_a_client_connects_to_the_server__and_the_build_task_fails__expect_client_to_disconnect(self):
@@ -176,8 +176,8 @@ class TestClient(unittest.TestCase):
                 )
             )
 
-            # Get step_complete message from client (BLOCKING)
-            step_complete_msg = connection.get_sent_msg()
+            # Get task_complete message from client (BLOCKING)
+            task_complete_msg = connection.get_sent_msg()
 
             # Join the client thread (Assert that the client's infinite message receiving loop ends)
             client_thread.join()
@@ -202,7 +202,7 @@ class TestClient(unittest.TestCase):
                     "task_id": "0",
                     "task_success": False,
                 },
-                step_complete_msg,
+                task_complete_msg,
             )
 
     def test__when_a_client_connects_to_the_server__and_server_sends_a_websocket_close_message__expect_that_the_build_task_is_aborted_and_the_websocket_is_closed(
