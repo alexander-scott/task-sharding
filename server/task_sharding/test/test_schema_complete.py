@@ -48,7 +48,7 @@ class TaskShardingTests__SchemaCompleted(TestCase):
         )
         self.assertEqual(1, total_running_schema_instances)
 
-        # Send client step complete message to controller
+        # Send client task complete message to controller
         await send_message_between_communicators(consumer_1, controller, client_task_complete_msg)
 
         # Assert the controller sent the correct schema complete message to the consumer
@@ -79,7 +79,7 @@ class TaskShardingTests__SchemaCompleted(TestCase):
         )
         self.assertEqual(1, total_running_schema_instances)
 
-        # Send client step complete message to controller
+        # Send client task complete message to controller
         await send_message_between_communicators(consumer_2, controller, client_task_complete_msg)
 
         # Assert the controller sent the correct schema complete message to the consumer
