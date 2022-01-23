@@ -98,7 +98,7 @@ class TestClient(unittest.TestCase):
                     {
                         "message_type": MessageType.BUILD_INSTRUCTION,
                         "schema_id": "mock_schema",
-                        "step_id": "0",
+                        "task_id": "0",
                     }
                 )
             )
@@ -111,7 +111,7 @@ class TestClient(unittest.TestCase):
                 json.dumps(
                     {
                         "message_type": MessageType.SCHEMA_COMPLETE,
-                        "schema_id": "mock_schema",
+                        "task_id": "mock_schema",
                     }
                 )
             )
@@ -128,7 +128,7 @@ class TestClient(unittest.TestCase):
                     "complex_patchset": False,
                     "cache_id": "1",
                     "schema_id": "mock_schema",
-                    "total_steps": 4,
+                    "total_tasks": 4,
                 },
                 init_msg,
             )
@@ -136,7 +136,7 @@ class TestClient(unittest.TestCase):
                 {
                     "message_type": MessageType.TASK_COMPLETE,
                     "schema_id": "mock_schema",
-                    "step_id": "0",
+                    "task_id": "0",
                     "step_success": True,
                 },
                 step_complete_msg,
@@ -171,7 +171,7 @@ class TestClient(unittest.TestCase):
                     {
                         "message_type": MessageType.BUILD_INSTRUCTION,
                         "schema_id": "mock_schema",
-                        "step_id": "0",
+                        "task_id": "0",
                     }
                 )
             )
@@ -191,7 +191,7 @@ class TestClient(unittest.TestCase):
                     "complex_patchset": False,
                     "cache_id": "1",
                     "schema_id": "mock_schema",
-                    "total_steps": 4,
+                    "total_tasks": 4,
                 },
                 init_msg,
             )
@@ -199,7 +199,7 @@ class TestClient(unittest.TestCase):
                 {
                     "message_type": MessageType.TASK_COMPLETE,
                     "schema_id": "mock_schema",
-                    "step_id": "0",
+                    "task_id": "0",
                     "step_success": False,
                 },
                 step_complete_msg,
@@ -235,7 +235,7 @@ class TestClient(unittest.TestCase):
                     {
                         "message_type": MessageType.BUILD_INSTRUCTION,
                         "schema_id": "mock_schema",
-                        "step_id": "0",
+                        "task_id": "0",
                     }
                 )
             )
@@ -260,7 +260,7 @@ class TestClient(unittest.TestCase):
                     "complex_patchset": False,
                     "cache_id": "1",
                     "schema_id": "mock_schema",
-                    "total_steps": 4,
+                    "total_tasks": 4,
                 },
                 init_msg,
             )

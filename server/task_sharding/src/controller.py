@@ -94,7 +94,7 @@ class Controller(AsyncConsumer):
             return self._create_schema_instance(msg)
 
     def _create_schema_instance(self, msg: dict) -> SchemaInstance:
-        schema_details = SchemaDetails(msg["cache_id"], msg["schema_id"], msg["total_steps"])
+        schema_details = SchemaDetails(msg["cache_id"], msg["schema_id"], msg["total_tasks"])
         logger.info("Creating schema instance with ID: %s", schema_details.id)
         schema_instance = SchemaInstance(schema_details)
         self._schema_instances.append(schema_instance)
