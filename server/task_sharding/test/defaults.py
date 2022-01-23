@@ -39,7 +39,7 @@ def create_default_build_instruction_message(task_id="0"):
 
 def create_default_step_complete_message(task_id="0", step_success=True):
     return {
-        "message_type": MessageType.STEP_COMPLETE,
+        "message_type": MessageType.TASK_COMPLETE,
         "schema_id": "1",
         "step_id": task_id,
         "step_success": step_success,

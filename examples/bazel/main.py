@@ -19,7 +19,7 @@ class BazelTask(TaskRunner):
     def run(self, task_id: str) -> int:
         logger.info("Starting build task")
 
-        target = self._schema["steps"][int(task_id)]["task"]
+        target = self._schema["tasks"][int(task_id)]["task"]
         self._process = subprocess.Popen(["bazel", "test", target], cwd=self._config.workspace_path)
         stdout, stderr = self._process.communicate()
         exit_code = self._process.wait()

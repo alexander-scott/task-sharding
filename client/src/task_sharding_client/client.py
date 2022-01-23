@@ -60,7 +60,7 @@ class Client:
             "complex_patchset": self._complex_patchset,
             "cache_id": self._config.cache_id,
             "schema_id": self._schema["name"],
-            "total_steps": len(self._schema["steps"]),
+            "total_steps": len(self._schema["tasks"]),
         }
 
         logger.info("Sending initial message: %s", str(initial_message))

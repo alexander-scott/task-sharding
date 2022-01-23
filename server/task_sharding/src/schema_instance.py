@@ -21,7 +21,7 @@ class SchemaInstance:
 
         self._dispatch = {
             MessageType.INIT: self._send_build_instructions,
-            MessageType.STEP_COMPLETE: self._receive_step_completed,
+            MessageType.TASK_COMPLETE: self._receive_step_completed,
         }
 
     def register_consumer(self, consumer_id: str, repo_state: dict):

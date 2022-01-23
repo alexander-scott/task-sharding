@@ -14,7 +14,7 @@ class SleepTask(TaskRunner):
     def run(self, task_id: str) -> int:
         logger.info("Starting build task")
 
-        sleep_amount = self._schema["steps"][int(task_id)]["task"]
+        sleep_amount = self._schema["tasks"][int(task_id)]["task"]
         sleep(sleep_amount)
 
         logger.info("Finished build task")
