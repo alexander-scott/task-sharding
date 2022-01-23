@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class SchemaInstance:
     def __init__(self, schema_details: SchemaDetails):
         self.schema_details = schema_details
-        self._to_do_steps = list(range(0, self.schema_details.total_steps))
+        self._to_do_steps = list(range(0, self.schema_details.total_tasks))
         self._channel_layer = get_channel_layer()
 
         self._registered_consumers = set()
@@ -103,13 +103,13 @@ class SchemaInstance:
                         "type": "send.message",
                         "message_type": MessageType.BUILD_INSTRUCTION,
                         "schema_id": self.schema_details.schema_id,
-                        "step_id": str(step),
+                        "task_id": str(step),
                     },
                 )
 
     async def _receive_step_completed(self, msg: dict, consumer_id: str):
         with self._consumer_lock:
-            task_id = msg["step_id"]
+            task_id = msg["task_id"]
             step_success = msg["step_success"]
             del self._in_progress_consumers[consumer_id]
             if step_success:

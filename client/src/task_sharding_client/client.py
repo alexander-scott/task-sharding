@@ -60,7 +60,7 @@ class Client:
             "complex_patchset": self._complex_patchset,
             "cache_id": self._config.cache_id,
             "schema_id": self._schema["name"],
-            "total_steps": len(self._schema["tasks"]),
+            "total_tasks": len(self._schema["tasks"]),
         }
 
         logger.info("Sending initial message: %s", str(initial_message))
@@ -114,7 +114,7 @@ class Client:
         This method starts the task runner and passes to it a task ID.
         """
 
-        task_id = msg["step_id"]
+        task_id = msg["task_id"]
 
         # Run the task (BLOCKING)
         self._task_return_code = self._task_runner_instance.run(task_id)
@@ -125,7 +125,7 @@ class Client:
         task_message = {
             "message_type": MessageType.TASK_COMPLETE,
             "schema_id": self._schema["name"],
-            "step_id": task_id,
+            "task_id": task_id,
             "step_success": bool(True if self._task_return_code == 0 else False),
         }
 

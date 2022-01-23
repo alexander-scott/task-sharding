@@ -10,7 +10,7 @@ from task_sharding.test.utils import proxy_message_from_channel_to_communicator,
 
 
 def create_client_init_message_default(
-    repo_state=None, complex_patchset=False, cache_id="1", schema_id="1", total_steps=1
+    repo_state=None, complex_patchset=False, cache_id="1", schema_id="1", total_tasks=1
 ) -> dict:
     if not repo_state:
         repo_state = {
@@ -25,7 +25,7 @@ def create_client_init_message_default(
         "complex_patchset": complex_patchset,
         "cache_id": cache_id,
         "schema_id": schema_id,
-        "total_steps": total_steps,
+        "total_tasks": total_tasks,
     }
 
 
