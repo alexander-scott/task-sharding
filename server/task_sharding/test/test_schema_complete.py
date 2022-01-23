@@ -6,7 +6,7 @@ from django.test import TestCase
 from task_sharding.test.defaults import (
     create_application,
     create_default_client_init_message,
-    create_default_step_complete_message,
+    create_default_task_complete_message,
     create_default_schema_complete_message,
 )
 from task_sharding.test.utils import (
@@ -33,7 +33,7 @@ class TaskShardingTests__SchemaCompleted(TestCase):
         await consumer_1.connect()
 
         client_init_msg = create_default_client_init_message()
-        client_step_complete_msg = create_default_step_complete_message()
+        client_task_complete_msg = create_default_task_complete_message()
         expected_schema_complete_msg = create_default_schema_complete_message()
 
         # Send client init message to controller
@@ -49,7 +49,7 @@ class TaskShardingTests__SchemaCompleted(TestCase):
         self.assertEqual(1, total_running_schema_instances)
 
         # Send client step complete message to controller
-        await send_message_between_communicators(consumer_1, controller, client_step_complete_msg)
+        await send_message_between_communicators(consumer_1, controller, client_task_complete_msg)
 
         # Assert the controller sent the correct schema complete message to the consumer
         actual_schema_complete_msg = await consumer_1.receive_from()
@@ -80,7 +80,7 @@ class TaskShardingTests__SchemaCompleted(TestCase):
         self.assertEqual(1, total_running_schema_instances)
 
         # Send client step complete message to controller
-        await send_message_between_communicators(consumer_2, controller, client_step_complete_msg)
+        await send_message_between_communicators(consumer_2, controller, client_task_complete_msg)
 
         # Assert the controller sent the correct schema complete message to the consumer
         actual_schema_complete_msg = await consumer_2.receive_from()

@@ -7,7 +7,7 @@ from task_sharding.test.defaults import (
     create_application,
     create_default_client_init_message,
     create_default_build_instruction_message,
-    create_default_step_complete_message,
+    create_default_task_complete_message,
     create_default_schema_complete_message,
 )
 from task_sharding.test.utils import (
@@ -49,9 +49,9 @@ class TaskShardingTests__SingleConsumerStepComplete(TestCase):
         actual_build_instruction_msg = await self.consumer.receive_from()
         self.assertDictEqual(expected_build_instruction_msg, json.loads(actual_build_instruction_msg))
 
-        # Send step complete message to controller
-        client_step_complete_msg = create_default_step_complete_message()
-        await send_message_between_communicators(self.consumer, self.controller, client_step_complete_msg)
+        # Send task complete message to controller
+        client_task_complete_msg = create_default_task_complete_message()
+        await send_message_between_communicators(self.consumer, self.controller, client_task_complete_msg)
 
         # Assert the controller sent the correct schema complete message to the consumer
         expected_schema_complete_msg = create_default_schema_complete_message()
@@ -82,7 +82,7 @@ class TaskShardingTests__SingleConsumerStepComplete(TestCase):
         self.assertDictEqual(expected_build_instruction_1_msg, json.loads(actual_build_instruction_msg))
 
         # Send client step complete message to controller
-        client_step_1_complete_msg = create_default_step_complete_message("1")
+        client_step_1_complete_msg = create_default_task_complete_message("1")
         await send_message_between_communicators(self.consumer, self.controller, client_step_1_complete_msg)
 
         # Assert the controller sent the correct build instruction to the consumer
@@ -91,7 +91,7 @@ class TaskShardingTests__SingleConsumerStepComplete(TestCase):
         self.assertDictEqual(expected_build_instruction_2_msg, json.loads(actual_build_instruction_msg))
 
         # Send client step complete message to controller
-        client_step_2_complete_msg = create_default_step_complete_message("0")
+        client_step_2_complete_msg = create_default_task_complete_message("0")
         await send_message_between_communicators(self.consumer, self.controller, client_step_2_complete_msg)
 
         # Assert the controller sent the correct schema complete message to the consumer
@@ -147,13 +147,13 @@ class TaskShardingTests__TwoConsumersStepComplete(TestCase):
         actual_build_instruction_msg = await self.consumer2.receive_from()
         self.assertDictEqual(expected_client_2_build_instruction_msg, json.loads(actual_build_instruction_msg))
 
-        # Send client step complete message to controller
-        client_1_step_complete_msg = create_default_step_complete_message("0")
-        await send_message_between_communicators(self.consumer1, self.controller, client_1_step_complete_msg)
+        # Send client task complete message to controller
+        client_1_task_complete_msg = create_default_task_complete_message("0")
+        await send_message_between_communicators(self.consumer1, self.controller, client_1_task_complete_msg)
 
-        # Send client step complete message to controller
-        client_2_step_complete_msg = create_default_step_complete_message("1")
-        await send_message_between_communicators(self.consumer2, self.controller, client_2_step_complete_msg)
+        # Send client task complete message to controller
+        client_2_task_complete_msg = create_default_task_complete_message("1")
+        await send_message_between_communicators(self.consumer2, self.controller, client_2_task_complete_msg)
 
         # Assert the controller sent the correct schema complete message to the consumer
         expected_schema_complete_msg = create_default_schema_complete_message()

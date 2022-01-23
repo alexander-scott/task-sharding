@@ -21,7 +21,7 @@ class SchemaInstance:
 
         self._dispatch = {
             MessageType.INIT: self._send_build_instructions,
-            MessageType.TASK_COMPLETE: self._receive_step_completed,
+            MessageType.TASK_COMPLETE: self._receive_task_completed,
         }
 
     def register_consumer(self, consumer_id: str, repo_state: dict):
@@ -107,7 +107,7 @@ class SchemaInstance:
                     },
                 )
 
-    async def _receive_step_completed(self, msg: dict, consumer_id: str):
+    async def _receive_task_completed(self, msg: dict, consumer_id: str):
         with self._consumer_lock:
             task_id = msg["task_id"]
             task_success = msg["task_success"]
