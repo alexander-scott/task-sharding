@@ -147,7 +147,7 @@ class TestClient(unittest.TestCase):
         GIVEN a client connected to the server with a designated schema.
         WHEN the client receives build instructions,
           AND subsequently fails to complete those build instructions.
-        EXPECT client to send a failed step complete message
+        EXPECT client to send a failed task complete message
           AND disconnect.
         """
         repo_state = {

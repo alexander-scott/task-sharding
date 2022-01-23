@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class SchemaInstance:
     def __init__(self, schema_details: SchemaDetails):
         self.schema_details = schema_details
-        self._to_do_steps = list(range(0, self.schema_details.total_tasks))
+        self._to_do_tasks = list(range(0, self.schema_details.total_tasks))
         self._channel_layer = get_channel_layer()
 
         self._registered_consumers = set()
@@ -37,7 +37,7 @@ class SchemaInstance:
             if consumer_id in self._in_progress_consumers:
                 task_id = self._in_progress_consumers[consumer_id]
                 del self._in_progress_consumers[consumer_id]
-                self._to_do_steps.append(task_id)
+                self._to_do_tasks.append(task_id)
                 self._print_with_prefix("Unassigning task ID " + str(task_id) + " from consumer " + consumer_id)
             if consumer_id in self._repo_states:
                 del self._repo_states[consumer_id]
@@ -91,11 +91,11 @@ class SchemaInstance:
 
     async def _send_build_instructions(self, msg: dict, consumer_id: str):
         with self._consumer_lock:
-            if len(self._to_do_steps) > 0:
-                step = self._to_do_steps.pop()
-                self._in_progress_consumers[consumer_id] = step
+            if len(self._to_do_tasks) > 0:
+                task = self._to_do_tasks.pop()
+                self._in_progress_consumers[consumer_id] = task
 
-                self._print_with_prefix("Assigning step ID " + str(step) + " to consumer " + consumer_id)
+                self._print_with_prefix("Assigning task ID " + str(task) + " to consumer " + consumer_id)
 
                 await self._channel_layer.send(
                     consumer_id,
@@ -103,7 +103,7 @@ class SchemaInstance:
                         "type": "send.message",
                         "message_type": MessageType.BUILD_INSTRUCTION,
                         "schema_id": self.schema_details.schema_id,
-                        "task_id": str(step),
+                        "task_id": str(task),
                     },
                 )
 
@@ -113,20 +113,20 @@ class SchemaInstance:
             task_success = msg["task_success"]
             del self._in_progress_consumers[consumer_id]
             if task_success:
-                self._print_with_prefix("Consumer " + consumer_id + " completed step " + task_id)
+                self._print_with_prefix("Consumer " + consumer_id + " completed task " + task_id)
             else:
-                # TODO: Do something on a step failure
-                self._to_do_steps.append(int(task_id))
-            steps_not_started = len(self._to_do_steps)
-            steps_in_progress = len(self._in_progress_consumers)
+                # TODO: Do something on a task failure
+                self._to_do_tasks.append(int(task_id))
+            tasks_not_started = len(self._to_do_tasks)
+            tasks_in_progress = len(self._in_progress_consumers)
 
-        if steps_not_started > 0 or steps_in_progress > 0:
+        if tasks_not_started > 0 or tasks_in_progress > 0:
             self._print_with_prefix(
                 "There are currently "
-                + str(steps_not_started)
-                + " steps not yet assigned and "
-                + str(steps_in_progress)
-                + " steps in progress"
+                + str(tasks_not_started)
+                + " tasks not yet assigned and "
+                + str(tasks_in_progress)
+                + " tasks in progress"
             )
             await self._send_build_instructions(msg, consumer_id)
         else:
@@ -134,10 +134,10 @@ class SchemaInstance:
 
     async def _send_schema_complete(self):
         with self._consumer_lock:
-            steps_not_started = len(self._to_do_steps)
-            steps_in_progress = len(self._in_progress_consumers)
+            tasks_not_started = len(self._to_do_tasks)
+            tasks_in_progress = len(self._in_progress_consumers)
 
-            if steps_not_started == 0 and steps_in_progress == 0:
+            if tasks_not_started == 0 and tasks_in_progress == 0:
                 self._print_with_prefix("Schema completed")
                 for consumer_id in self._registered_consumers:
                     self._print_with_prefix("Sending schema complete message to consumer " + consumer_id)
