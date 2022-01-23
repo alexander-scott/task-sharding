@@ -35,10 +35,10 @@ class SchemaInstance:
             if consumer_id in self._registered_consumers:
                 self._registered_consumers.remove(consumer_id)
             if consumer_id in self._in_progress_consumers:
-                step_id = self._in_progress_consumers[consumer_id]
+                task_id = self._in_progress_consumers[consumer_id]
                 del self._in_progress_consumers[consumer_id]
-                self._to_do_steps.append(step_id)
-                self._print_with_prefix("Unassigning step ID " + str(step_id) + " from consumer " + consumer_id)
+                self._to_do_steps.append(task_id)
+                self._print_with_prefix("Unassigning task ID " + str(task_id) + " from consumer " + consumer_id)
             if consumer_id in self._repo_states:
                 del self._repo_states[consumer_id]
 
@@ -109,14 +109,14 @@ class SchemaInstance:
 
     async def _receive_step_completed(self, msg: dict, consumer_id: str):
         with self._consumer_lock:
-            step_id = msg["step_id"]
+            task_id = msg["step_id"]
             step_success = msg["step_success"]
             del self._in_progress_consumers[consumer_id]
             if step_success:
-                self._print_with_prefix("Consumer " + consumer_id + " completed step " + step_id)
+                self._print_with_prefix("Consumer " + consumer_id + " completed step " + task_id)
             else:
                 # TODO: Do something on a step failure
-                self._to_do_steps.append(int(step_id))
+                self._to_do_steps.append(int(task_id))
             steps_not_started = len(self._to_do_steps)
             steps_in_progress = len(self._in_progress_consumers)
 

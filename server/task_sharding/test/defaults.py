@@ -28,20 +28,20 @@ def create_default_client_init_message(total_steps=1):
     }
 
 
-def create_default_build_instruction_message(step_id="0"):
+def create_default_build_instruction_message(task_id="0"):
     return {
         "type": "send.message",
         "message_type": MessageType.BUILD_INSTRUCTION,
         "schema_id": "1",
-        "step_id": step_id,
+        "step_id": task_id,
     }
 
 
-def create_default_step_complete_message(step_id="0", step_success=True):
+def create_default_step_complete_message(task_id="0", step_success=True):
     return {
         "message_type": MessageType.STEP_COMPLETE,
         "schema_id": "1",
-        "step_id": step_id,
+        "step_id": task_id,
         "step_success": step_success,
     }
 

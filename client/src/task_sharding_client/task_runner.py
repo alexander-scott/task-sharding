@@ -9,7 +9,7 @@ class TaskRunner:
     def __exit__(self, exc_type, exc_value, traceback):
         self.abort()
 
-    def run(self, step_id: str) -> int:
+    def run(self, task_id: str) -> int:
         raise NotImplementedError()
 
     def abort(self):
