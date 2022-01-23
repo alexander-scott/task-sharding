@@ -28,9 +28,9 @@ class MockConnection(Connection):
 
 
 class MockSuccessfulTaskRunner(TaskRunner):
-    def run(self, step_id: str) -> int:
-        logger.info("Starting task: %s", step_id)
-        logger.info("Finished task: %s", step_id)
+    def run(self, task_id: str) -> int:
+        logger.info("Starting task: %s", task_id)
+        logger.info("Finished task: %s", task_id)
         return 0
 
     def abort(self):
@@ -38,9 +38,9 @@ class MockSuccessfulTaskRunner(TaskRunner):
 
 
 class MockFailedTaskRunner(TaskRunner):
-    def run(self, step_id: str) -> int:
-        logger.info("Starting task: %s", step_id)
-        logger.info("Finished task: %s", step_id)
+    def run(self, task_id: str) -> int:
+        logger.info("Starting task: %s", task_id)
+        logger.info("Finished task: %s", task_id)
         return 1
 
     def abort(self):
@@ -52,7 +52,7 @@ class MockRunUntilAbortedRunner(TaskRunner):
         super().__init__(schema, config)
         self._run_loop = True
 
-    def run(self, step_id: str) -> int:
+    def run(self, task_id: str) -> int:
         while self._run_loop:
             continue
         return 1
@@ -134,7 +134,7 @@ class TestClient(unittest.TestCase):
             )
             self.assertDictEqual(
                 {
-                    "message_type": MessageType.STEP_COMPLETE,
+                    "message_type": MessageType.TASK_COMPLETE,
                     "schema_id": "mock_schema",
                     "step_id": "0",
                     "step_success": True,
@@ -197,7 +197,7 @@ class TestClient(unittest.TestCase):
             )
             self.assertDictEqual(
                 {
-                    "message_type": MessageType.STEP_COMPLETE,
+                    "message_type": MessageType.TASK_COMPLETE,
                     "schema_id": "mock_schema",
                     "step_id": "0",
                     "step_success": False,

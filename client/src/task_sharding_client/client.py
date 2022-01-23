@@ -39,7 +39,7 @@ class Client:
         self._dispatch = {
             MessageType.BUILD_INSTRUCTION: self._process_build_instructions,
             MessageType.SCHEMA_COMPLETE: self._process_schema_complete,
-            MessageType.ABORT_STEP: self._process_abort_step,
+            MessageType.ABORT_TASK: self._process_abort_task,
             MessageType.WEBSOCKET_CLOSED: self._process_websocket_closed,
         }
         self._message_listening = False
@@ -111,27 +111,27 @@ class Client:
 
     def _run_build_instructions(self, msg: dict):
         """
-        This method starts the task runner and passes to it a step ID.
+        This method starts the task runner and passes to it a task ID.
         """
 
-        step_id = msg["step_id"]
+        task_id = msg["step_id"]
 
         # Run the task (BLOCKING)
-        self._task_return_code = self._task_runner_instance.run(step_id)
+        self._task_return_code = self._task_runner_instance.run(task_id)
 
         # Setting this to None signifies that the task has finished
         self._task_runner_instance = None
 
-        step_message = {
-            "message_type": MessageType.STEP_COMPLETE,
+        task_message = {
+            "message_type": MessageType.TASK_COMPLETE,
             "schema_id": self._schema["name"],
-            "step_id": step_id,
+            "step_id": task_id,
             "step_success": bool(True if self._task_return_code == 0 else False),
         }
 
-        logger.info("Sending step complete message: %s", str(step_message))
+        logger.info("Sending task complete message: %s", str(task_message))
         try:
-            self._connection.send_message(step_message)
+            self._connection.send_message(task_message)
         except WebSocketConnectionClosedException as exception:
             logger.error("Failed to send message to server: %s", str(exception))
             self._message_listening = False
@@ -143,13 +143,13 @@ class Client:
         logger.info("Received schema complete message: %s", str(msg))
         self._message_listening = False
 
-    def _process_abort_step(self, msg: dict):
+    def _process_abort_task(self, msg: dict):
         with self._task_in_progress_lock:
             if self._task_runner_instance:
-                logger.info("Aborting current step")
+                logger.info("Aborting current task")
                 self._task_runner_instance.abort()
                 self._task_runner_instance = None
 
     def _process_websocket_closed(self, msg: dict):
-        self._process_abort_step(msg)
+        self._process_abort_task(msg)
         self._message_listening = False
