@@ -110,9 +110,9 @@ class SchemaInstance:
     async def _receive_step_completed(self, msg: dict, consumer_id: str):
         with self._consumer_lock:
             task_id = msg["task_id"]
-            step_success = msg["step_success"]
+            task_success = msg["task_success"]
             del self._in_progress_consumers[consumer_id]
-            if step_success:
+            if task_success:
                 self._print_with_prefix("Consumer " + consumer_id + " completed step " + task_id)
             else:
                 # TODO: Do something on a step failure

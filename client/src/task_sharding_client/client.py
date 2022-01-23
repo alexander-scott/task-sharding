@@ -126,7 +126,7 @@ class Client:
             "message_type": MessageType.TASK_COMPLETE,
             "schema_id": self._schema["name"],
             "task_id": task_id,
-            "step_success": bool(True if self._task_return_code == 0 else False),
+            "task_success": bool(True if self._task_return_code == 0 else False),
         }
 
         logger.info("Sending task complete message: %s", str(task_message))

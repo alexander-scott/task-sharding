@@ -137,7 +137,7 @@ class TestClient(unittest.TestCase):
                     "message_type": MessageType.TASK_COMPLETE,
                     "schema_id": "mock_schema",
                     "task_id": "0",
-                    "step_success": True,
+                    "task_success": True,
                 },
                 step_complete_msg,
             )
@@ -200,7 +200,7 @@ class TestClient(unittest.TestCase):
                     "message_type": MessageType.TASK_COMPLETE,
                     "schema_id": "mock_schema",
                     "task_id": "0",
-                    "step_success": False,
+                    "task_success": False,
                 },
                 step_complete_msg,
             )
