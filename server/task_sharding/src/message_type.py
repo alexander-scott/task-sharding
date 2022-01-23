@@ -4,5 +4,7 @@ import enum
 class MessageType(int, enum.Enum):
     INIT = 1
     BUILD_INSTRUCTION = 2
-    STEP_COMPLETE = 3
+    TASK_COMPLETE = 3
     SCHEMA_COMPLETE = 4
+    ABORT_TASK = 5
+    WEBSOCKET_CLOSED = 6
