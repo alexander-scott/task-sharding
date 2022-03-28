@@ -5,7 +5,7 @@ channels==3.0.4
 channels-redis==3.4.0
 daphne==3.0.2
 Django==3.2.12
-pylint==2.13.0
+pylint==2.13.2
 pyopenssl==22.0.0
 pyyaml==6.0
 service-identity==21.1.0
