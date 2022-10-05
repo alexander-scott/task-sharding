@@ -6,7 +6,7 @@ channels-redis==3.4.1
 daphne==3.0.2
 Django==3.2.14
 pylint==2.15.3
-pyopenssl==22.0.0
+pyopenssl==22.1.0
 pyyaml==6.0
 service-identity==21.1.0
 websocket-client==1.4.1
