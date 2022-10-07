@@ -1,5 +1,5 @@
 asgiref==3.5.2
-black==22.8.0
+black==22.10.0
 build==0.8.0
 channels==3.0.5
 channels-redis==3.4.1
