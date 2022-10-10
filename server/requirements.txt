@@ -2,7 +2,7 @@ asgiref==3.5.2
 black==22.10.0
 build==0.8.0
 channels==3.0.5
-channels-redis==3.4.1
+channels-redis==4.0.0
 daphne==3.0.2
 Django==3.2.14
 pylint==2.15.3
