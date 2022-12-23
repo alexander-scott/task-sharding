@@ -27,6 +27,7 @@ class SleepTask(TaskRunner):
 
 def main():
     configuration = parse_input_arguments()
+    print("Starting connection")
     with Connection("localhost:8000", configuration.client_id) as connection:
         client = Client(configuration, connection, SleepTask)
         sys.exit(client.run())
