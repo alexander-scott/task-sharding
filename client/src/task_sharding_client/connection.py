@@ -28,7 +28,7 @@ class Connection:
             self._websocket.close()
 
     def _init_connection(self, server_url: str) -> websocket.WebSocketApp:
-        logger.info("Initialising connection...")
+        logger.info(f"Initialising connection to {server_url}...")
         websocket.enableTrace(False)
         web_socket = websocket.WebSocketApp(
             server_url,
