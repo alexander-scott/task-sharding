@@ -49,7 +49,7 @@ class Connection:
                 connection_timeout -= 1
                 sleep(1)
 
-        if not web_socket.sock.connected:
+        if not web_socket.sock or not web_socket.sock.connected:
             raise websocket.WebSocketException("Failed to connect")
 
         return web_socket
